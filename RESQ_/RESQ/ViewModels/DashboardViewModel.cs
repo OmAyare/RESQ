@@ -83,48 +83,73 @@ namespace RESQ.ViewModels
             }
         }
 
+        [RelayCommand]
+        public async Task AddEmergencyContact()
+        {
+            var status = await Permissions.CheckStatusAsync<Permissions.ContactsRead>();
 
-        //[RelayCommand]
-        //public async Task AddEmergencyContact()
-        //{
-        //    var status = await Permissions.RequestAsync<Permissions.ContactsRead>();
-        //    if (status != PermissionStatus.Granted)
-        //    {
-        //        await Application.Current.MainPage.DisplayAlert(
-        //            "Permission Required",
-        //            "We need access to your contacts to add an emergency contact.",
-        //            "OK");
-        //        return;
-        //    }
+            if (status != PermissionStatus.Granted)
+            {
+                status = await Permissions.RequestAsync<Permissions.ContactsRead>();
+            }
 
-        //    try
-        //    {
-        //        var contact = await 
-        //        if (contact == null) return; // user canceled
+            if (status != PermissionStatus.Granted)
+            {
+                await Application.Current.MainPage.DisplayAlert(
+                    "Permission Required",
+                    "We need access to your contacts to add an emergency contact.",
+                    "OK");
+                return;
+            }
 
-        //        var (name, phone) = contact.Value;
+            try
+            {
+                var contact = await Microsoft.Maui.ApplicationModel.Communication.Contacts.Default.PickContactAsync();
+                if (contact == null) return; // user canceled
 
-        //        var newContact = new EmergencyContact
-        //        {
-        //            ContactName = name,
-        //            PhoneNumber = phone
-        //        };
+                // If multiple phone numbers exist, let user choose
+                string chosenNumber = string.Empty;
 
-        //        // Prevent adding 112 again
-        //        if (newContact.PhoneNumber == "112")
-        //            return;
+                if (contact.Phones?.Count > 1)
+                {
+                    var numbers = contact.Phones.Select(p => p.PhoneNumber).ToArray();
+                    chosenNumber = await Application.Current.MainPage.DisplayActionSheet(
+                        "Choose a number",
+                        "Cancel",
+                        null,
+                        numbers
+                    );
 
-        //        await _localDb.SaveEmergencyContactAsync(newContact);
-        //        EmergencyContacts.Add(newContact);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        await Application.Current.MainPage.DisplayAlert(
-        //            "Error",
-        //            $"Could not add contact: {ex.Message}",
-        //            "OK");
-        //    }
-        //}
+                    if (chosenNumber == "Cancel" || string.IsNullOrEmpty(chosenNumber))
+                        return;
+                }
+                else
+                {
+                    chosenNumber = contact.Phones?.FirstOrDefault()?.PhoneNumber ?? string.Empty;
+                }
+
+                var newContact = new EmergencyContact
+                {
+                    ContactName = contact.DisplayName ?? contact.GivenName,
+                    PhoneNumber = chosenNumber
+                };
+
+                // Prevent adding 112 again
+                if (newContact.PhoneNumber == "112")
+                    return;
+
+                await _localDb.SaveEmergencyContactAsync(newContact);
+                EmergencyContacts.Add(newContact);
+            }
+            catch (Exception ex)
+            {
+                await Application.Current.MainPage.DisplayAlert(
+                    "Error",
+                    $"Could not add contact: {ex.Message}",
+                    "OK");
+            }
+        }
+
 
         [RelayCommand]
         public async Task DeleteEmergencyContact(EmergencyContact contact)

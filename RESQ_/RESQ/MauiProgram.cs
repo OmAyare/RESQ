@@ -22,8 +22,9 @@ namespace RESQ
 
 
             string dbPath = Path.Combine(FileSystem.AppDataDirectory, "resqlocal.db3");
+            //File.Delete(dbPath);
             builder.Services.AddSingleton(new LocalDatabase(dbPath));
-
+            
 #if ANDROID
             builder.Services.AddDemoApiClientService(x => x.ApiBaseAddress = "http://10.0.2.2:5236/");
             //builder.Services.AddDemoApiClientService(x => x.ApiBaseAddress = "http://192.168.0.166:5236/");

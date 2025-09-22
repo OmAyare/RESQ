@@ -55,6 +55,7 @@ namespace RESQ.Data
                 customer.Cust_Id = existing.Cust_Id;
                 customer.Username = existing.Username;   
                 customer.Password = existing.Password; 
+                customer.UserID = existing.UserID;
                 await _db.UpdateAsync(customer);
             }
             else
