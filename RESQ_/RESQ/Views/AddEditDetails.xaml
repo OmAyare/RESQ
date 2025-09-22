@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RESQ.Views.AddEditDetailsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:RESQ.ViewModels"
+    Title="Edit Details"
+    x:DataType="vm:AddEditDetailsViewModel"
+    BackgroundColor="#1c1c1c"
+    NavigationPage.HasNavigationBar="False"
+    Shell.NavBarIsVisible="False">
+    <ScrollView>
+        <VerticalStackLayout Padding="15" Spacing="20">
+
+            <!--  Personal Info Card  -->
+            <Frame
+                Padding="20"
+                BackgroundColor="#262626"
+                BorderColor="#262626"
+                CornerRadius="20">
+                <VerticalStackLayout Spacing="10">
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="20"
+                        Text="Personal Info"
+                        TextColor="#d633ff" />
+
+                    <Entry
+                        Placeholder="Full Name"
+                        Text="{Binding FullName}"
+                        TextColor="White" />
+                    <Picker
+                        Title="Select Gender"
+                        ItemsSource="{Binding GenderOptions}"
+                        SelectedItem="{Binding Gender}"
+                        TextColor="White" />
+                    <DatePicker Date="{Binding Dob}" TextColor="White" />
+                    <Entry
+                        Placeholder="Address"
+                        Text="{Binding Address}"
+                        TextColor="White" />
+                    <Entry
+                        Keyboard="Numeric"
+                        Placeholder="Height"
+                        Text="{Binding Height}"
+                        TextColor="White" />
+                    <Entry
+                        Keyboard="Numeric"
+                        Placeholder="Weight"
+                        Text="{Binding Weight}"
+                        TextColor="White" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!--  Medical Info Card  -->
+            <Frame
+                Padding="20"
+                BackgroundColor="#262626"
+                BorderColor="#262626"
+                CornerRadius="20">
+                <VerticalStackLayout Spacing="10">
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="20"
+                        Text="Medical Info"
+                        TextColor="#d633ff" />
+
+                    <Entry
+                        Placeholder="Blood Type"
+                        Text="{Binding BloodType}"
+                        TextColor="White" />
+                    <Entry
+                        Placeholder="PH Blood Type"
+                        Text="{Binding Ph_bloodType}"
+                        TextColor="White" />
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label
+                            Text="Organ Donor"
+                            TextColor="White"
+                            VerticalOptions="Center" />
+                        <Switch IsToggled="{Binding OrganDonor}" />
+                    </HorizontalStackLayout>
+
+                    <Editor
+                        Placeholder="Medical Conditions"
+                        Text="{Binding MedicalConditions}"
+                        TextColor="White" />
+                    <Editor
+                        Placeholder="Medications"
+                        Text="{Binding Medications}"
+                        TextColor="White" />
+                    <Editor
+                        Placeholder="Allergies/Reactions"
+                        Text="{Binding AllergiesReactions}"
+                        TextColor="White" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!--  Save / Cancel  -->
+            <Button
+                BackgroundColor="#FF4500"
+                Command="{Binding SaveDetaisCommand}"
+                FontFamily="FASolid"
+                FontSize="18"
+                Text="&#xf0c7;"
+                TextColor="White" />
+
+            <Button
+                BackgroundColor="Gray"
+                Clicked="OnCancelClicked"
+                CornerRadius="12"
+                Text="Cancel"
+                TextColor="White" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

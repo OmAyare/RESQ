@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RESQ.Views.RegisterPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:RESQ.ViewModels"
+    Title="Register"
+    x:DataType="vm:RegisterViewModel"
+    BackgroundColor="#1c1c1c"
+    NavigationPage.HasNavigationBar="False"
+    Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <Entry Placeholder="Full Name" Text="{Binding FullName}" TextColor="White"/>
+            <Entry
+                Keyboard="Email"
+                Placeholder="Email"
+                Text="{Binding Username}"  TextColor="White"/>
+            <Entry
+                IsPassword="True"
+                Placeholder="Password"
+                Text="{Binding Password}"  TextColor="White"/>
+            <Entry Placeholder="District" Text="{Binding District}"  TextColor="White" />
+            <Entry Placeholder="Region" Text="{Binding Region}"  TextColor="White"/>
+            <HorizontalStackLayout>
+                <Label
+                    Margin="0,0,5,0"
+                    FontAttributes="Bold"
+                    Text="+91"
+                    TextColor="White"
+                    VerticalOptions="Center" />
+                <Entry
+                    Keyboard="Telephone"
+                    Placeholder="Enter phone number"
+                    Text="{Binding PersonalPhone}"  TextColor="White"/>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout>
+                <Label
+                    Margin="0,0,5,0"
+                    FontAttributes="Bold"
+                    Text="+91"
+                    TextColor="White"
+                    VerticalOptions="Center" />
+                <Entry
+                    Keyboard="Telephone"
+                    Placeholder="Family Phone"
+                    Text="{Binding FamilyPhone}"  TextColor="White"/>
+            </HorizontalStackLayout>
+
+            <Button
+                BackgroundColor="Red"
+                Command="{Binding RegisterUserCommand}"
+                Text="Register"
+                TextColor="White" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RESQ.Views.DashboardPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:RESQ.Models"
+    xmlns:views="clr-namespace:RESQ.Views"
+    xmlns:vm="clr-namespace:RESQ.ViewModels"
+    Padding="0"
+    x:DataType="vm:DashboardViewModel"
+    BackgroundColor="#1c1c1c"
+    NavigationPage.HasNavigationBar="False"
+    Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="15" Spacing="20">
+
+            <!--  🔹 Customer Info Card  -->
+            <Frame
+                Padding="20"
+                BackgroundColor="#262626"
+                BorderColor="#262626"
+                CornerRadius="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Header with Edit  -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="20"
+                            Text="Personal Info"
+                            TextColor="#d633ff" />
+                        <Button
+                            Grid.Column="1"
+                            BackgroundColor="Transparent"
+                            Command="{Binding GoTOEditPageCommand}"
+                            Text="Edit"
+                            TextColor="SkyBlue" />
+                    </Grid>
+
+                    <!--  User Details  -->
+                    <StackLayout
+                        Grid.Row="1"
+                        Margin="0,10,0,0"
+                        Spacing="10">
+
+                        <!--  Name + Age/Gender  -->
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="22"
+                            Text="{Binding Customer.FullName}"
+                            TextColor="White" />
+                        <Label
+                            FontSize="14"
+                            Text="{Binding Customer.Gender}"
+                            TextColor="Gray" />
+
+                        <!--  Blood/Height/Weight  -->
+                        <Grid
+                            ColumnDefinitions="*,*,*"
+                            ColumnSpacing="20"
+                            RowDefinitions="Auto,Auto">
+                            <Label Text="Blood type" TextColor="Gray" />
+                            <Label
+                                Grid.Column="1"
+                                Text="Height"
+                                TextColor="Gray" />
+                            <Label
+                                Grid.Column="2"
+                                Text="Weight"
+                                TextColor="Gray" />
+
+                            <Label
+                                Grid.Row="1"
+                                Text="{Binding Customer.BloodType}"
+                                TextColor="White" />
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Text="{Binding Customer.Height}"
+                                TextColor="White" />
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="2"
+                                Text="{Binding Customer.Weight}"
+                                TextColor="White" />
+                        </Grid>
+
+                        <!--  Address  -->
+                        <Label
+                            Margin="0,10,0,0"
+                            FontAttributes="Bold"
+                            Text="Address"
+                            TextColor="Gray" />
+                        <Label Text="{Binding Customer.Address}" TextColor="White" />
+                    </StackLayout>
+                </Grid>
+            </Frame>
+
+            <!--  🔹 Medical Info Card  -->
+            <Frame
+                Padding="20"
+                BackgroundColor="#262626"
+                BorderColor="#262626"
+                CornerRadius="20">
+                <StackLayout Spacing="10">
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="20"
+                        Text="Medical Info"
+                        TextColor="#d633ff" />
+
+                    <Label
+                        FontAttributes="Bold"
+                        Text="Medical conditions"
+                        TextColor="Gray" />
+                    <Label Text="{Binding MedicalInfo.MedicalConditions}" TextColor="White" />
+
+                    <Label
+                        FontAttributes="Bold"
+                        Text="Allergies"
+                        TextColor="Gray" />
+                    <Label Text="{Binding MedicalInfo.AllergiesReactions}" TextColor="White" />
+
+                    <Label
+                        FontAttributes="Bold"
+                        Text="Organ donor"
+                        TextColor="Gray" />
+                    <Label Text="{Binding Customer.OrganDonor, Converter={StaticResource BoolToYesNoConverter}}" TextColor="White" />
+                </StackLayout>
+            </Frame>
+
+
+            <!--  🔹 Emergency Contacts Card  -->
+            <Frame
+                Padding="20"
+                BackgroundColor="#262626"
+                BorderColor="#262626"
+                CornerRadius="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Header  -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="20"
+                            Text="Emergency Contacts"
+                            TextColor="#d633ff" />
+                        <Button
+                            Grid.Column="1"
+                            BackgroundColor="Transparent"
+                            Text="Add"
+                            TextColor="SkyBlue" />
+                    </Grid>
+
+                    <!--  Contacts List  -->
+                    <CollectionView
+                        Grid.Row="1"
+                        Margin="0,10,0,0"
+                        ItemsSource="{Binding EmergencyContacts}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:EmergencyContact">
+                                <Grid
+                                    Margin="0,5,0,5"
+                                    Padding="5"
+                                    ColumnDefinitions="*,Auto">
+                                    <StackLayout>
+                                        <Label
+                                            FontAttributes="Bold"
+                                            Text="{Binding ContactName}"
+                                            TextColor="White" />
+                                        <Label Text="{Binding PhoneNumber}" TextColor="Gray" />
+                                    </StackLayout>
+
+                                    <!--  Hide delete button for 112  -->
+                                    <Button
+                                        Grid.Column="1"
+                                        BackgroundColor="Red"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DashboardViewModel}}, Path=DeleteEmergencyContactCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Text="🗑"
+                                        TextColor="White">
+                                        <Button.Triggers>
+                                            <DataTrigger
+                                                Binding="{Binding PhoneNumber}"
+                                                TargetType="Button"
+                                                Value="112">
+                                                <Setter Property="IsVisible" Value="False" />
+                                            </DataTrigger>
+                                        </Button.Triggers>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Grid>
+            </Frame>
+            <!--  Two Toggle Switches  -->
+            <StackLayout Orientation="Horizontal" Spacing="10">
+                <Label
+                    Text="Toggle 1"
+                    TextColor="White"
+                    VerticalOptions="Center" />
+                <Switch />
+            </StackLayout>
+
+            <StackLayout Orientation="Horizontal" Spacing="10">
+                <Label
+                    Text="Toggle 2"
+                    TextColor="White"
+                    VerticalOptions="Center" />
+                <Switch />
+            </StackLayout>
+
+            <!--  Events History Button  -->
+            <Button
+                x:Name="EventsHistoryButton"
+                BackgroundColor="#6200EE"
+                Clicked="OnEventsHistoryClicked"
+                CornerRadius="12"
+                FontSize="18"
+                HeightRequest="50"
+                Text="Events History"
+                TextColor="White" />
+
+            <!--  Big Status Button  -->
+            <Button
+                x:Name="StatusButton"
+                BackgroundColor="Green"
+                Clicked="OnStatusButtonClicked"
+                CornerRadius="12"
+                FontSize="32"
+                HorizontalOptions="Center"
+                MinimumWidthRequest="550"
+                Text="SAFE"
+                TextColor="White"
+                VerticalOptions="Center" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
