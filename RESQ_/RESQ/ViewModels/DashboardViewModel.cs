@@ -12,20 +12,35 @@ using Microsoft.Maui.ApplicationModel.Communication;
 using RESQ.Data;
 using RESQ.Messages;
 using RESQ.Models;
+using RESQ.Services;
 using RESQ.Views;
 
 namespace RESQ.ViewModels
 {
     public partial class DashboardViewModel : ObservableObject
     {
+        private readonly ILocationService _locationService;
+        private readonly IEmergencyEventService _eventService;
+        private Timer? _timer;
+        private DateTime _emergencyStart;
+        [ObservableProperty]
+        private string statusText = "SAFE";
+
+        [ObservableProperty]
+        private Color statusColor = Colors.Green;
+
+        private bool isSafe = true;
         private readonly LocalDatabase _localDb;
         [ObservableProperty] private Customer customer;
         [ObservableProperty] private MedicalInfo medicalInfo;
         public ObservableCollection<EmergencyContact> EmergencyContacts { get; set; } = new ObservableCollection<EmergencyContact>();
 
-        public DashboardViewModel(LocalDatabase localDb)
+
+        public DashboardViewModel(LocalDatabase localDb, ILocationService locationService, IEmergencyEventService eventService)
         {
             _localDb = localDb;
+            _locationService = locationService;
+            _eventService = eventService;
 
             LoadData();
 
@@ -42,21 +57,24 @@ namespace RESQ.ViewModels
             Customer = await _localDb.GetCustomerAsync() ?? new Customer();
             MedicalInfo = await _localDb.GetMedicalInfoAsync() ?? new MedicalInfo();
 
-            if (Customer != null)
-            {
-                var fixedContact = await _localDb.GetContactByNumberAsync("112");
+            var contacts = await _localDb.GetAllEmergencyContactsAsync();
 
-                if (fixedContact == null)
+            // if no 112, add it
+            if (!contacts.Any(c => c.PhoneNumber == "112"))
+            {
+                var default112 = new EmergencyContact
                 {
-                    var default112 = new EmergencyContact
-                    {
-                        ContactName = "Emergency",
-                        PhoneNumber = "112"
-                    };
-                    await _localDb.SaveEmergencyContactAsync(default112);
-                    EmergencyContacts.Insert(0, default112);
-                }
+                    ContactName = "Emergency",
+                    PhoneNumber = "112"
+                };
+                await _localDb.SaveEmergencyContactAsync(default112);
+                contacts.Insert(0, default112);
             }
+
+            // refresh observable collection
+            EmergencyContacts.Clear();
+            foreach (var c in contacts)
+                EmergencyContacts.Add(c);
         }
 
         private async void LoadData()
@@ -66,21 +84,24 @@ namespace RESQ.ViewModels
             MedicalInfo = await _localDb.GetMedicalInfoAsync() ?? new MedicalInfo();
 
 
-            if (customer != null)
-            {
-                var fixedContact = await _localDb.GetContactByNumberAsync("112");
+            var contacts = await _localDb.GetAllEmergencyContactsAsync();
 
-                if (fixedContact == null)
+            // if no 112, add it
+            if (!contacts.Any(c => c.PhoneNumber == "8928393337"))
+            {
+                var default112 = new EmergencyContact
                 {
-                    var default112 = new EmergencyContact
-                    {
-                        ContactName = "Emergency",
-                        PhoneNumber = "112"
-                    };
-                    await _localDb.SaveEmergencyContactAsync(default112);
-                    EmergencyContacts.Insert(0, default112);
-                }
+                    ContactName = "Emergency (Test)",
+                    PhoneNumber = "8928393337"
+                };
+                await _localDb.SaveEmergencyContactAsync(default112);
+                contacts.Insert(0, default112);
             }
+
+            // refresh observable collection
+            EmergencyContacts.Clear();
+            foreach (var c in contacts)
+                EmergencyContacts.Add(c);
         }
 
         [RelayCommand]
@@ -187,10 +208,72 @@ namespace RESQ.ViewModels
             await Application.Current.MainPage.Navigation.PushAsync(addeditdetailsdPage);
         }
 
-        //public void DeleteContact(EmergencyContact contact)
-        //{
-        //    if (EmergencyContacts.Contains(contact))
-        //        EmergencyContacts.Remove(contact);
-        //}
+        [RelayCommand]
+        private async Task ToggleStatusAsync()
+        {
+            isSafe = !isSafe;
+
+            if (isSafe)
+            {
+                StatusText = "SAFE";
+                StatusColor = Colors.Green;
+                StopEmergencyMode();
+            }
+            else
+            {
+                StatusText = "EMERGENCY";
+                StatusColor = Colors.Red;
+                StartEmergencyMode();
+            }
+        }
+
+        private void StartEmergencyMode()
+        {
+            _emergencyStart = DateTime.UtcNow;
+
+            _timer = new Timer(async _ =>
+            {
+                if (DateTime.UtcNow - _emergencyStart > TimeSpan.FromHours(48))
+                {
+                    StopEmergencyMode();
+                    return;
+                }
+
+                try
+                {
+                    var (lat, lng) = await _locationService.GetCurrentLocationAsync();
+
+                    var ev = new EmergencyEvent
+                    {
+                        Cust_Id = 1, // from logged-in user
+                        EventDateTime = DateTime.UtcNow,
+                        Latitude = lat,
+                        Longitude = lng,
+                        Status = "EMERGENCY",
+                       // LinkSentAt = DateTime.UtcNow
+                    };
+
+                    await _eventService.SaveAndSendEventAsync(ev);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"❌ Error in emergency loop: {ex.Message}");
+                }
+
+            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
+        }
+
+        private void StopEmergencyMode()
+        {
+            _timer?.Dispose();
+            _timer = null;
+        }
     }
+
+    //public void DeleteContact(EmergencyContact contact)
+    //{
+    //    if (EmergencyContacts.Contains(contact))
+    //        EmergencyContacts.Remove(contact);
+    //}
 }
+

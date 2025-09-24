@@ -42,25 +42,25 @@ public partial class DashboardPage : ContentPage
         await DisplayAlert("Navigation", "This will go to Events History Page", "OK");
     }
 
-    private async void OnStatusButtonClicked(object sender, EventArgs e)
-    {
-        isSafe = !isSafe;
+    //private async void OnStatusButtonClicked(object sender, EventArgs e)
+    //{
+    //    isSafe = !isSafe;
 
-        if (isSafe)
-        {
-            StatusButton.Text = "SAFE";
-            StatusButton.BackgroundColor = Colors.Green;
-        }
-        else
-        {
-            StatusButton.Text = "EMERGENCY";
-            StatusButton.BackgroundColor = Colors.Red;
-        }
+    //    if (isSafe)
+    //    {
+    //        StatusButton.Text = "SAFE";
+    //        StatusButton.BackgroundColor = Colors.Green;
+    //    }
+    //    else
+    //    {
+    //        StatusButton.Text = "EMERGENCY";
+    //        StatusButton.BackgroundColor = Colors.Red;
+    //    }
 
-        // Pulse animation
-        await StatusButton.ScaleTo(1.1, 150, Easing.CubicInOut);
-        await StatusButton.ScaleTo(1.0, 150, Easing.CubicInOut);
-    }
+    //    // Pulse animation
+    //    await StatusButton.ScaleTo(1.1, 150, Easing.CubicInOut);
+    //    await StatusButton.ScaleTo(1.0, 150, Easing.CubicInOut);
+    //}
 
 
 }

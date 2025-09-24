@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using RESQ.Data;
+using RESQ.Services;
 using RESQ.ViewModels;
 using RESQ.Views;
 using RESQ_API.Client.IoC;
@@ -20,11 +21,16 @@ namespace RESQ
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
+            // Register services
+            builder.Services.AddSingleton<ILocationService, LocationService>();
+            builder.Services.AddSingleton<IPermissionService, PermissionService>();
+            builder.Services.AddSingleton<IEmergencyEventService, EmergencyEventService>();
+
 
             string dbPath = Path.Combine(FileSystem.AppDataDirectory, "resqlocal.db3");
             //File.Delete(dbPath);
             builder.Services.AddSingleton(new LocalDatabase(dbPath));
-            
+
 #if ANDROID
             builder.Services.AddDemoApiClientService(x => x.ApiBaseAddress = "http://10.0.2.2:5236/");
             //builder.Services.AddDemoApiClientService(x => x.ApiBaseAddress = "http://192.168.0.166:5236/");

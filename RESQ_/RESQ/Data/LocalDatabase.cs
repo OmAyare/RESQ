@@ -34,17 +34,16 @@ namespace RESQ.Data
             await _db.DeleteAsync(contact);
         }
 
-        public async Task<List<EmergencyContact>> GetEmergencyContactsAsync(int customerId)
+        public Task<List<EmergencyContact>> GetAllEmergencyContactsAsync()
         {
-            return await _db.Table<EmergencyContact>()
-                           .Where(c => c.Cust_Id == customerId)
-                           .ToListAsync();
+            return _db.Table<EmergencyContact>().ToListAsync();
         }
-        public async Task ResetCustomerTableAsync()
-        {
-            await _db.DropTableAsync<Customer>();
-            await _db.CreateTableAsync<Customer>();
-        }
+
+        //public async Task ResetCustomerTableAsync()
+        //{
+        //    await _db.DropTableAsync<Customer>();
+        //    await _db.CreateTableAsync<Customer>();
+        //}
 
         /************************************Saving or updating the Customer **************************************************/
         public async Task SaveCustomerAsync(Customer customer)
@@ -118,6 +117,35 @@ namespace RESQ.Data
         {
             return _db.DeleteAsync(customer);
         }
+        /************************************ Saving EmergencyEvent **************************************************/
+        public async Task SaveEmergencyEventAsync(EmergencyEvent ev)
+        {
+            await _db.InsertAsync(ev);
+        }
+
+        public async Task UpdateEmergencyEventAsync(EmergencyEvent ev)
+        {
+            await _db.UpdateAsync(ev);
+        }
+
+        public async Task<List<EmergencyEvent>> GetEmergencyEventsAsync()
+        {
+            return await _db.Table<EmergencyEvent>().ToListAsync();
+        }
+
+        public async Task<EmergencyEvent?> GetEmergencyEventByIdAsync(int id)
+        {
+            return await _db.Table<EmergencyEvent>()
+                            .Where(e => e.EventID == id)
+                            .FirstOrDefaultAsync();
+        }
+
+        public async Task DeleteEmergencyEventAsync(EmergencyEvent ev)
+        {
+            await _db.DeleteAsync(ev);
+        }
+
+
     }
 
 }

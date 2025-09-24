@@ -240,6 +240,7 @@
                 TextColor="White" />
 
             <!--  Big Status Button  -->
+            <!--
             <Button
                 x:Name="StatusButton"
                 BackgroundColor="Green"
@@ -250,7 +251,17 @@
                 MinimumWidthRequest="550"
                 Text="SAFE"
                 TextColor="White"
-                VerticalOptions="Center" />
+                VerticalOptions="Center" />-->
+            <Button
+                BackgroundColor="{Binding StatusColor}"
+                Command="{Binding ToggleStatusCommand}"
+                CornerRadius="12"
+                FontSize="32"
+                HeightRequest="100"
+                Text="{Binding StatusText}"
+                TextColor="White"
+                WidthRequest="300" />
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
