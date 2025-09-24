@@ -1,0 +1,102 @@
+﻿﻿@using PagedList;
+@using PagedList.Mvc;
+
+
+@model IPagedList<RESQ_Server.Areas.Admin.Data.user>
+
+
+<link href="~/Content/PagedList.css" rel="stylesheet" />
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+
+@{
+    ViewBag.Title = "user";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout1.cshtml";
+}
+}
+
+<h2>user</h2>
+
+
+<div class="container-fluid px-4">
+    <h2>Index</h2>
+
+    <p class="d-flex flex-wrap gap-2">
+        @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-sm btn-outline-primary" })
+        @Html.ActionLink("Create Role", "Create_Role", null, new { @class = "btn btn-sm btn-outline-primary" })
+    </p>
+
+    <p>
+        @using (Html.BeginForm("User", "Admin", FormMethod.Get))
+        {
+            <div class="row g-2 align-items-center mb-3">
+                <div class="col-auto"><b>Search By:</b></div>
+                <div class="col-auto">@Html.RadioButton("SearchBy", "Username", true) Employee Name</div>
+                <div class="col-auto">@Html.RadioButton("SearchBy", "Status") Position</div>
+                <div class="col-auto">@Html.TextBox("Search", ViewBag.CurrentFilter as string, new { @class = "form-control" })</div>
+                <div class="col-auto"><input type="submit" value="Search" class="btn btn-outline-secondary" /></div>
+            </div>
+        }
+    </p>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>@Html.DisplayNameFor(m => m.First().full_Name)</th>
+                    <th>@Html.DisplayNameFor(m => m.First().UserName)</th>
+                    <th>@Html.DisplayNameFor(m => m.First().Personal_PhoneNumber)</th>
+                    <th>@Html.DisplayNameFor(m => m.First().Emergency_PhoneNumber)</th>
+                    <th>@Html.DisplayNameFor(m => m.First().Region)</th>
+                    <th>@Html.DisplayNameFor(m => m.First().District)</th>
+                    @*<th>@Html.DisplayNameFor(m => m.First().)</th>*@
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            @if (Model.Count == 0)
+            {
+                <tr>
+                    <td colspan="4">
+                        No Rows Match the Search Criteria
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.full_Name</td>
+                            <td>@item.UserName</td>
+                            <td>@item.Personal_PhoneNumber</td>
+                            <td>@item.Emergency_PhoneNumber</td>
+                            <td>@item.Region</td>
+                            <td>@item.District</td>
+                            @*<td>
+                                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                    @Html.ActionLink("Edit", "Edit", new { id = item.id }, new { @class = "btn btn-sm btn-outline-primary" })
+                                    @Html.ActionLink("Delete", "Delete", new { id = item.id }, new { @class = "btn btn-sm btn-outline-danger" })
+                                </div>
+                            </td>*@
+                        </tr>
+                    }
+                </tbody>
+            }
+        </table>
+    </div>
+
+    <div class="mb-3">
+        @Html.PagedListPager(Model, page => Url.Action("User", new { page, SearchBy = Request["SearchBy"], Search = Request["Search"] }),
+            new PagedListRenderOptions()
+            {
+                Display = PagedListDisplayMode.IfNeeded,
+                DisplayPageCountAndCurrentLocation = true
+            })
+    </div>
+
+    <div>
+        @Html.ActionLink("Back to Dashboard", "Dashboard", "Admin", new { }, new { @class = "btn btn-outline-secondary" })
+    </div>
+</div>
+
+
