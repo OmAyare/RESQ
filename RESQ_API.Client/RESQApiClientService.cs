@@ -153,5 +153,57 @@ namespace RESQ_API.Client
                 throw;
             }
         }
+
+        /**********************************************************************************************************/
+
+        public async Task<StartSessionResponse?> StartSessionAsync(EmergencyEvent newEvent)
+        {
+            try
+            {
+                newEvent.User = null;
+
+                var response = await _httpClient.PostAsJsonAsync("/api/emergencyevents/start", newEvent);
+                response.EnsureSuccessStatusCode();
+
+                return await response.Content.ReadFromJsonAsync<StartSessionResponse>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ StartSession Error: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<bool> UpdateSessionAsync(Guid sessionId, EmergencyEvent updated)
+        {
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync($"/api/emergencyevents/update/{sessionId}", updated);
+                response.EnsureSuccessStatusCode();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ UpdateSession Error: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> EndSessionAsync(Guid sessionId)
+        {
+            try
+            {
+                var response = await _httpClient.PutAsync($"/api/emergencyevents/end/{sessionId}", null);
+                response.EnsureSuccessStatusCode();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ EndSession Error: {ex.Message}");
+                return false;
+            }
+        }
+
+
     }
 }

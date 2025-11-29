@@ -3,6 +3,7 @@ using RESQ.Data;
 using RESQ.Services;
 using RESQ.ViewModels;
 using RESQ.Views;
+using RESQ_API.Client;
 using RESQ_API.Client.IoC;
 
 namespace RESQ
@@ -25,15 +26,18 @@ namespace RESQ
             builder.Services.AddSingleton<ILocationService, LocationService>();
             builder.Services.AddSingleton<IPermissionService, PermissionService>();
             builder.Services.AddSingleton<IEmergencyEventService, EmergencyEventService>();
+            builder.Services.AddSingleton<RESQApiClientService>();
+            builder.Services.AddSingleton<ApiSessionService>();
+
 
 
             string dbPath = Path.Combine(FileSystem.AppDataDirectory, "resqlocal.db3");
-            //File.Delete(dbPath);
+           //File.Delete(dbPath);
             builder.Services.AddSingleton(new LocalDatabase(dbPath));
 
 #if ANDROID
-            builder.Services.AddDemoApiClientService(x => x.ApiBaseAddress = "http://10.0.2.2:5236/");
-            //builder.Services.AddDemoApiClientService(x => x.ApiBaseAddress = "http://192.168.0.166:5236/");
+          //  builder.Services.AddDemoApiClientService(x => x.ApiBaseAddress = "http://10.0.2.2:5236/");
+            builder.Services.AddDemoApiClientService(x => x.ApiBaseAddress = "http://192.168.0.166:5236/");
 #else
             builder.Services.AddDemoApiClientService(x => x.ApiBaseAddress = "http://localhost:5236/");
 #endif

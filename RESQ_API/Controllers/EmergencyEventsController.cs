@@ -41,9 +41,12 @@ namespace RESQ_API.Controllers
         {
             // ignore incoming User navigation if present
             ev.User = null;
+            ev.SessionId = Guid.NewGuid();
+            ev.EventDateTime = DateTime.UtcNow;
 
             _resq_dbcontext.EmergencyEvents.Add(ev);
             await _resq_dbcontext.SaveChangesAsync();
+
 
             return CreatedAtAction(nameof(GetById), new { id = ev.EventId }, ev);
         }
@@ -80,6 +83,65 @@ namespace RESQ_API.Controllers
             await _resq_dbcontext.SaveChangesAsync();
             return NoContent(); // 204
         }
+
+        [HttpPost("start")]
+        public async Task<IActionResult> StartSession([FromBody] EmergencyEvent ev)
+        {
+            ev.User = null;
+
+            // Create session id
+            ev.SessionId = Guid.NewGuid();
+            ev.EventDateTime = DateTime.UtcNow;
+
+            _resq_dbcontext.EmergencyEvents.Add(ev);
+            await _resq_dbcontext.SaveChangesAsync();
+
+            return Ok(new
+            {
+                SessionId = ev.SessionId,
+                EventId = ev.EventId
+            });
+        }
+
+
+        [HttpPut("update/{sessionId}")]
+        public async Task<IActionResult> UpdateSession(Guid sessionId, [FromBody] EmergencyEvent updatedEvent)
+        {
+            var ev = await _resq_dbcontext.EmergencyEvents
+                .Where(x => x.SessionId == sessionId)
+                .OrderByDescending(x => x.EventDateTime)
+                .FirstOrDefaultAsync();
+
+            if (ev == null)
+                return NotFound();
+
+            ev.Latitude = updatedEvent.Latitude;
+            ev.Longitude = updatedEvent.Longitude;
+            ev.Status = updatedEvent.Status;
+            ev.EventDateTime = DateTime.UtcNow;
+
+            await _resq_dbcontext.SaveChangesAsync();
+            return NoContent(); // 204
+        }
+
+
+        [HttpPut("end/{sessionId}")]
+        public async Task<IActionResult> EndSession(Guid sessionId)
+        {
+            var list = await _resq_dbcontext.EmergencyEvents
+                .Where(x => x.SessionId == sessionId)
+                .ToListAsync();
+
+            if (!list.Any())
+                return NotFound();
+
+            foreach (var item in list)
+                item.Status = "Completed";
+
+            await _resq_dbcontext.SaveChangesAsync();
+            return NoContent(); // 204
+        }
+
 
     }
 }

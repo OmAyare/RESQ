@@ -12,6 +12,12 @@ namespace RESQ.Services
     {
         public async Task<bool> RequestAllPermissionsAsync()
         {
+            //sms 
+            var status = await Permissions.CheckStatusAsync<Permissions.Sms>();
+            if (status != PermissionStatus.Granted)
+                status = await Permissions.RequestAsync<Permissions.Sms>();
+
+
             // Location
             var locationStatus = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
             if (locationStatus != PermissionStatus.Granted)
@@ -44,7 +50,9 @@ namespace RESQ.Services
             return locationStatus == PermissionStatus.Granted &&
                    backgroundStatus == PermissionStatus.Granted &&
                    contactsStatus == PermissionStatus.Granted &&
-                   phoneStatus == PermissionStatus.Granted;
+                   phoneStatus == PermissionStatus.Granted &&
+                   status == PermissionStatus.Granted;
+
         }
     }
 }

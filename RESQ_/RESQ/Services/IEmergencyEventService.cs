@@ -7,8 +7,14 @@ using RESQ.Models;
 
 namespace RESQ.Services
 {
+    //public interface IEmergencyEventService
+    //{
+    //    Task SaveAndSendEventAsync(EmergencyEvent ev);
+    //}
     public interface IEmergencyEventService
     {
-        Task SaveAndSendEventAsync(EmergencyEvent ev);
+        Task TriggerEmergencyAsync();
+        Task SendUpdateAsync(double lat, double lng);
+        Task EndEmergency();
     }
 }

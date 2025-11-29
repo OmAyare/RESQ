@@ -1,7 +1,145 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-	<application android:allowBackup="true" android:usesCleartextTraffic="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true"></application>
-	
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"  package="com.companyname.resq">
+	<application android:allowBackup="true" android:usesCleartextTraffic="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true" android:label="RESQ">
+		<!-- Emergency Foreground Service -->
+		<!-- SMS Receiver for incoming messages -->
+		<receiver
+            android:name="RESQ.Platforms.Android.SmsReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+			<intent-filter>
+				<action android:name="android.provider.Telephony.SMS_RECEIVED" />
+				<category android:name="android.intent.category.DEFAULT" />
+			</intent-filter>
+		</receiver>
+
+		<!-- ✅ Required to qualify as default SMS app -->
+		<service
+			android:name="RESQ.Platforms.Android.HeadlessSmsSendService"
+			android:enabled="true"
+			android:exported="true"
+			android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE">
+			<intent-filter>
+				<action android:name="android.intent.action.RESPOND_VIA_MESSAGE" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:scheme="sms" />
+				<data android:scheme="smsto" />
+				<data android:scheme="mms" />
+				<data android:scheme="mmsto" />
+			</intent-filter>
+		</service>
+
+		<receiver
+					android:name="RESQ.Platforms.Android.SmsSentReceiver"
+					android:enabled="true"
+					android:exported="true">
+			<intent-filter>
+				<action android:name="SMS_SENT" />
+			</intent-filter>
+		</receiver>
+
+		<receiver
+            android:name="RESQ.Platforms.Android.SmsDeliveredReceiver"
+            android:enabled="true"
+            android:exported="true">
+			<intent-filter>
+				<action android:name="SMS_DELIVERED" />
+			</intent-filter>
+		</receiver>
+		
+		<!-- ✅ Required by Android to qualify as default SMS app -->
+		<receiver
+			android:name="RESQ.Platforms.Android.SmsDeliverReceiver"
+			android:enabled="true"
+			android:exported="true"
+			android:permission="android.permission.BROADCAST_SMS">
+			<intent-filter>
+				<action android:name="android.provider.Telephony.SMS_DELIVER" />
+				<category android:name="android.intent.category.DEFAULT" />
+			</intent-filter>
+		</receiver>
+
+
+		<!-- (Optional) SMS Compose Activity (only needed if RESQ becomes default SMS app) -->
+		<activity
+			android:name="RESQ.Platforms.Android.ComposeSmsActivity"
+			android:exported="true"  
+		    android:launchMode="singleTop"
+			android:theme="@android:style/Theme.Translucent.NoTitleBar">
+			<intent-filter>
+				<action android:name="android.intent.action.SENDTO" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:scheme="smsto" />
+				<data android:scheme="sms" />
+			</intent-filter>
+		</activity>
+
+		<!-- Required by Android 12+ to qualify as full SMS app -->
+		<activity
+			android:name="RESQ.Platforms.Android.RespondViaMessageActivity"
+			android:exported="true"
+			android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE"
+			android:theme="@android:style/Theme.Translucent.NoTitleBar">
+			<intent-filter>
+				<action android:name="android.intent.action.RESPOND_VIA_MESSAGE" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:scheme="smsto" />
+			</intent-filter>
+		</activity>
+
+		<activity
+			   android:name="RESQ.Platforms.Android.SmsConversationListActivity"
+			   android:exported="true"
+			   android:theme="@android:style/Theme.Translucent.NoTitleBar">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.APP_MESSAGING" />
+			</intent-filter>
+		</activity>
+
+		<!-- ✅ MMS Deliver Receiver (MANDATORY placeholder) -->
+		<receiver
+            android:name="RESQ.Platforms.Android.MmsReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_WAP_PUSH">
+			<intent-filter>
+				<action android:name="android.provider.Telephony.WAP_PUSH_DELIVER" />
+				<action android:name="android.provider.Telephony.WAP_PUSH_RECEIVED" />
+				<data android:mimeType="application/vnd.wap.mms-message" />
+			</intent-filter>
+		</receiver>
+
+		<!-- File provider for sharing/export (used by AndroidX) -->
+		<provider
+			android:name="androidx.core.content.FileProvider"
+			android:authorities="${applicationId}.provider"
+			android:exported="false"
+			android:grantUriPermissions="true">
+			<meta-data
+				android:name="android.support.FILE_PROVIDER_PATHS"
+				android:resource="@xml/file_paths" />
+		</provider>
+
+
+	</application>
+
+	<!-- SMS -->
+	<uses-permission android:name="android.permission.WRITE_SMS" />
+	<uses-permission android:name="android.permission.SEND_SMS" />
+	<uses-permission android:name="android.permission.READ_SMS" />
+	<uses-permission android:name="android.permission.RECEIVE_SMS" />
+	<uses-permission android:name="android.permission.BROADCAST_SMS" />
+	<uses-permission android:name="android.permission.RECEIVE_MMS" />
+	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+	<!-- Extra permissions required for full SMS app role -->
+	<uses-permission android:name="android.permission.RECEIVE_WAP_PUSH" />
+	<uses-permission android:name="android.permission.READ_CELL_BROADCASTS" />
+
+
+
 	<!-- Network -->
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />
@@ -14,4 +152,12 @@
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 	<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-</manifest>
+	
+	<!-- Foreground service permission -->
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
+	<uses-permission android:name="android.permission.SEND_RESPOND_VIA_MESSAGE" />
+
+
+</manifest>	

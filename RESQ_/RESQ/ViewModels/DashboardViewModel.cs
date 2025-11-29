@@ -49,6 +49,15 @@ namespace RESQ.ViewModels
                 await LoadDataAsync(); // reload when edit is saved
             });
 
+            var lastStatus = Preferences.Get("EmergencyStatus", "SAFE");
+
+            if (lastStatus == "EMERGENCY")
+            {
+                isSafe = false;
+                StatusText = "EMERGENCY";
+                StatusColor = Colors.Red;
+                StartEmergencyMode(); 
+            }
 
         }
 
@@ -152,7 +161,7 @@ namespace RESQ.ViewModels
                 var newContact = new EmergencyContact
                 {
                     ContactName = contact.DisplayName ?? contact.GivenName,
-                    PhoneNumber = chosenNumber
+                    PhoneNumber = NormalizeIndianNumber(chosenNumber)
                 };
 
                 // Prevent adding 112 again
@@ -217,13 +226,16 @@ namespace RESQ.ViewModels
             {
                 StatusText = "SAFE";
                 StatusColor = Colors.Green;
-                StopEmergencyMode();
+                Preferences.Set("EmergencyStatus", "SAFE");
+
+                await _eventService.EndEmergency();
             }
             else
             {
                 StatusText = "EMERGENCY";
                 StatusColor = Colors.Red;
-                StartEmergencyMode();
+                Preferences.Set("EmergencyStatus", "EMERGENCY");
+                await _eventService.TriggerEmergencyAsync();  // start session + SMS sent once
             }
         }
 
@@ -233,42 +245,70 @@ namespace RESQ.ViewModels
 
             _timer = new Timer(async _ =>
             {
-                if (DateTime.UtcNow - _emergencyStart > TimeSpan.FromHours(48))
+                if ((DateTime.UtcNow - _emergencyStart).TotalHours >= 48)
                 {
-                    StopEmergencyMode();
+                    await StopEmergencyModeAsync();
                     return;
                 }
 
                 try
                 {
                     var (lat, lng) = await _locationService.GetCurrentLocationAsync();
-
-                    var ev = new EmergencyEvent
-                    {
-                        Cust_Id = 1, // from logged-in user
-                        EventDateTime = DateTime.UtcNow,
-                        Latitude = lat,
-                        Longitude = lng,
-                        Status = "EMERGENCY",
-                       // LinkSentAt = DateTime.UtcNow
-                    };
-
-                    await _eventService.SaveAndSendEventAsync(ev);
+                    await _eventService.SendUpdateAsync(lat, lng);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"❌ Error in emergency loop: {ex.Message}");
+                    Console.WriteLine($"❌ Emergency update failed: {ex.Message}");
                 }
-
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
         }
 
-        private void StopEmergencyMode()
+        private async Task StopEmergencyModeAsync()
         {
             _timer?.Dispose();
             _timer = null;
+
+            await _eventService.EndEmergency();
+
+            StatusText = "SAFE";
+            StatusColor = Colors.Green;
+            Preferences.Set("EmergencyStatus", "SAFE");
         }
-    }
+
+        /**/
+        private string NormalizeIndianNumber(string number)
+        {
+            number = number.Trim().Replace(" ", "").Replace("-", "");
+            if (number.StartsWith("+91"))
+                return number;
+            if (number.StartsWith("0"))
+                return "+91" + number.Substring(1);
+            if (number.Length == 10)
+                return "+91" + number;
+            return number;
+        }
+
+        //[RelayCommand] private async Task ToggleStatusAsync() 
+        //{ isSafe = !isSafe; 
+        //    if (isSafe) 
+        //    { StatusText = "SAFE"; StatusColor = Colors.Green; Preferences.Set("EmergencyStatus", "SAFE");
+        //        StopEmergencyMode();
+        //    } 
+        //    else { StatusText = "EMERGENCY"; StatusColor = Colors.Red; Preferences.Set("EmergencyStatus", "EMERGENCY"); StartEmergencyMode(); }
+        //}
+
+        //private void StartEmergencyMode()
+        //{ // _emergencyStart = DateTime.UtcNow;
+        //   _emergencyStart = DateTime.UtcNow; 
+        //    #if ANDROID 
+        //    var context = Android.App.Application.Context; var intent = new Android.Content.Intent(context, typeof(RESQ.Platforms.Android.EmergencyService));
+        //    if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.O) 
+        //        context.StartForegroundService(intent);
+        //    else context.StartService(intent); 
+        //    #endif //_timer = new Timer(async _ => //{ // if (DateTime.UtcNow - _emergencyStart > TimeSpan.FromHours(48)) // { // StopEmergencyMode(); // return; // } // try // { // 
+        //    var (lat, lng) = await _locationService.GetCurrentLocationAsync(); 
+        //    // var ev = new EmergencyEvent // { // Cust_Id = customer.Cust_Id, // from logged-in user // EventDateTime = DateTime.UtcNow, // Latitude = lat, // Longitude = lng, // Status = "EMERGENCY", // // LinkSentAt = DateTime.UtcNow // }; // await _eventService.SaveAndSendEventAsync(ev); // } // catch (Exception ex) // { // Console.WriteLine($"❌ Error in emergency loop: {ex.Message}"); // } //}, null, TimeSpan.Zero, TimeSpan.FromSeconds(30)); }
+        }
 
     //public void DeleteContact(EmergencyContact contact)
     //{

@@ -22,6 +22,7 @@ namespace RESQ_API.Domain.Entities
         [Required]
         public double Longitude { get; set; }
         public string? Status { get; set; }
+        public Guid? SessionId { get; set; }
 
         // Navigation property (Event belongs to 1 User)
         [ForeignKey(nameof(UserId))]
