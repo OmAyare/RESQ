@@ -12,6 +12,17 @@ public partial class DashboardPage : ContentPage
         BindingContext = vm;
     }
 
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+
+        if (BindingContext is DashboardViewModel vm)
+        {
+            vm.SyncEmergencyStateFromPreferences();
+        }
+    }
+
+
     //private async void OnDeleteClicked(object sender, EventArgs e)
     //{
     //    if (sender is RippleButton rippleButton && rippleButton.BindingContext is EmergencyContact contact)
@@ -32,15 +43,15 @@ public partial class DashboardPage : ContentPage
     //    }
     //}
 
-    private async void OnEventsHistoryClicked(object sender, EventArgs e)
-    {
-        // Add a "press" animation
-        await EventsHistoryButton.ScaleTo(0.95, 100, Easing.CubicInOut);
-        await EventsHistoryButton.ScaleTo(1.0, 100, Easing.CubicInOut);
+    //private async void OnEventsHistoryClicked(object sender, EventArgs e)
+    //{
+    //    // Add a "press" animation
+    //    await EventsHistoryButton.ScaleTo(0.95, 100, Easing.CubicInOut);
+    //    await EventsHistoryButton.ScaleTo(1.0, 100, Easing.CubicInOut);
 
-        // For now, just show a message. Later, navigate to another page.
-        await DisplayAlert("Navigation", "This will go to Events History Page", "OK");
-    }
+    //    // For now, just show a message. Later, navigate to another page.
+    //    await DisplayAlert("Navigation", "This will go to Events History Page", "OK");
+    //}
 
     //private async void OnStatusButtonClicked(object sender, EventArgs e)
     //{

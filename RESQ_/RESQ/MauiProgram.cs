@@ -53,6 +53,11 @@ namespace RESQ
             builder.Services.AddTransient<AddEditDetailsPage>();
             builder.Services.AddTransient<AddEditDetailsViewModel>();
 
+            builder.Services.AddTransient<LocalEventHistory>();
+            builder.Services.AddTransient<historypage>();
+
+            var db = builder.Services.BuildServiceProvider().GetService<LocalDatabase>();
+            _ = db.DeleteOldEmergencyEventsAsync();
 
             builder.Services.AddTransient<Func<RegisterPage>>(sp => () => sp.GetRequiredService<RegisterPage>());
 

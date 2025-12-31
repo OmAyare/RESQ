@@ -212,7 +212,7 @@
                 </Grid>
             </Frame>
             <!--  Two Toggle Switches  -->
-            <StackLayout Orientation="Horizontal" Spacing="10">
+            <!--<StackLayout Orientation="Horizontal" Spacing="10">
                 <Label
                     Text="Toggle 1"
                     TextColor="White"
@@ -226,13 +226,13 @@
                     TextColor="White"
                     VerticalOptions="Center" />
                 <Switch />
-            </StackLayout>
+            </StackLayout>-->
 
             <!--  Events History Button  -->
             <Button
                 x:Name="EventsHistoryButton"
                 BackgroundColor="#6200EE"
-                Clicked="OnEventsHistoryClicked"
+                Command="{Binding GoToEventhistoryCommand}"
                 CornerRadius="12"
                 FontSize="18"
                 HeightRequest="50"

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RESQ.Views.historypage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Event History">
+    <CollectionView ItemsSource="{Binding Events}">
+        <CollectionView.ItemTemplate>
+            <DataTemplate>
+                <Frame
+                    Margin="8"
+                    Padding="12"
+                    BorderColor="Gray"
+                    CornerRadius="10">
+                    <VerticalStackLayout>
+                        <Label FontAttributes="Bold" Text="{Binding EventDateTime, StringFormat='Date: {0:dd MMM yyyy HH:mm}'}" />
+
+                        <Label Text="{Binding Latitude, StringFormat='Lat: {0:F6}'}" />
+                        <Label Text="{Binding Longitude, StringFormat='Lon: {0:F6}'}" />
+
+                        <Label Text="{Binding Status, StringFormat='Status: {0}'}" TextColor="DarkGreen" />
+                    </VerticalStackLayout>
+                </Frame>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentPage>

@@ -361,8 +361,8 @@
             <button class="menu-toggle" onclick="toggleSidebar()">
                 <i class="bi bi-list"></i>
             </button>
-            <img src="@Url.Content("~/image/logo1.png")" alt="Logo" onclick="location.href='@Url.Action("Dashboard", "Admin")'" />
-            <h2 onclick="location.href='@Url.Action("Dashboard", "Admin")'">Job Tracks</h2>
+            <img src="@Url.Content("~/image/logo1.png")" alt="Logo" onclick="location.href='@Url.Action("Dashboard", "Livetracking")'" />
+            <h2 onclick="location.href='@Url.Action("Dashboard", "Livetracking")'">Job Tracks</h2>
         </div>
         <div class="user-info">
             <div class="dropdown" style="position: relative;">
@@ -394,18 +394,18 @@
 
     <div class="layout-container">
         <div class="sidebar" id="sidebarMenu">
-            <a href="@Url.Action("Dashboard", "Admin")" class="@(ViewContext.RouteData.Values["action"].ToString() == "Dashboard" ? "active" : "")">
+            <a href="@Url.Action("Dashboard", "Livetracking")" class="@(ViewContext.RouteData.Values["action"].ToString() == "Dashboard" ? "active" : "")">
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
             <a href="@Url.Action("User", "Admin")" class="@(ViewContext.RouteData.Values["action"].ToString() == "User" ? "active" : "")">
                 <i class="bi bi-person-circle"></i> User
-            </a>
+            @*</a>
             <a href="@Url.Action("Company", "Admin")" class="@(ViewContext.RouteData.Values["action"].ToString() == "Company" ? "active" : "")">
                 <i class="bi bi-building"></i> Company
             </a>
             <a href="@Url.Action("AssignWork", "Admin")" class="@(ViewContext.RouteData.Values["action"].ToString() == "AssignWork" ? "active" : "")">
                 <i class="bi bi-list-task"></i> Assign Work
-            </a>
+            </a>*@
         </div>
 
         <div class="main-body">

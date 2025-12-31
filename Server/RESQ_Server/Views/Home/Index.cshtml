@@ -263,11 +263,11 @@
                         var redirectUrl = "";
 
                         if (roleId === 1)
-                            redirectUrl = '@Url.Action("Dashboard", "Admin", new { area = "Admin" })';
-                        else if (roleId === 2)
+                            redirectUrl = '@Url.Action("Dashboard", "Livetracking", new { area = "Admin" })';
+                        @*else if (roleId === 2)
                             redirectUrl = '@Url.Action("Dashboard", "TeamLeader", new { area = "TeamLeader" })';
                         else if (roleId === 3)
-                            redirectUrl = '@Url.Action("Dashboard", "Recruiter", new { area = "Recruiter" })';
+                            redirectUrl = '@Url.Action("Dashboard", "Recruiter", new { area = "Recruiter" })';*@
                         else
                             redirectUrl = '@Url.Action("NotFound", "Error")';
 

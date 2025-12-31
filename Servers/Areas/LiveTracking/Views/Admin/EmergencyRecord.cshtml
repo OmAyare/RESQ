@@ -1,0 +1,84 @@
+﻿﻿@using PagedList;
+@using PagedList.Mvc;
+
+
+@model IPagedList<Servers.Areas.LiveTracking.Data.Emergencyrecords>
+
+
+<link href="~/Content/PagedList.css" rel="stylesheet" />
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+
+@{
+    ViewBag.Title = "Emergency Records";
+    Layout = "~/Areas/LiveTracking/Views/Shared/_Layout1.cshtml";
+
+}
+<div class="container-fluid px-4">
+    <p>
+        @using (Html.BeginForm("EmergencyRecord", "Admin", FormMethod.Get))
+        {
+            <div class="row g-2 align-items-center mb-3">
+                <div class="col-auto"><b>Search By:</b></div>
+                <div class="col-auto">@Html.RadioButton("SearchBy", "FullName", true) Name</div>
+                <div class="col-auto">@Html.RadioButton("SearchBy", "Region") Region</div>
+                <div class="col-auto">@Html.RadioButton("SearchBy", "District") District</div>
+                <div class="col-auto">@Html.TextBox("Search", ViewBag.CurrentFilter as string, new { @class = "form-control" })</div>
+                <div class="col-auto"><input type="submit" value="Search" class="btn btn-outline-secondary" /></div>
+            </div>
+        }
+    </p>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>@Html.DisplayNameFor(m => m.First().FullName)</th>
+                    <th>@Html.DisplayNameFor(m => m.First().Region)</th>
+                    <th>@Html.DisplayNameFor(m => m.First().District)</th>
+                    <th>@Html.DisplayNameFor(m => m.First().EventDateTime)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            @if (Model.Count == 0)
+            {
+                <tr>
+                    <td colspan="4">
+                        No Rows Match the Search Criteria
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.FullName</td>
+                            <td>@item.Region</td>
+                            <td>@item.District</td>
+                            <td>@item.EventDateTime</td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                    @Html.ActionLink("View", "Details", new { id = item.EventId }, new { @class = "btn btn-sm btn-outline-primary" })
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            }
+        </table>
+    </div>
+
+    <div class="mb-3">
+        @Html.PagedListPager(Model, page => Url.Action("EmergencyRecord", new { page, SearchBy = Request["SearchBy"], Search = Request["Search"] }),
+            new PagedListRenderOptions()
+            {
+                Display = PagedListDisplayMode.IfNeeded,
+                DisplayPageCountAndCurrentLocation = true
+            })
+    </div>
+
+    <div>
+        @Html.ActionLink("Back to Dashboard", "Dashboard", "Admin", new { }, new { @class = "btn btn-outline-secondary" })
+    </div>
+</div>

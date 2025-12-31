@@ -1,6 +1,10 @@
 ﻿using Android.App;
+using Android.Content;
 using Android.Content.PM;
 using Android.OS;
+using Microsoft.Maui.Controls;
+using Microsoft.Extensions.DependencyInjection;
+using RESQ.Services;
 
 namespace RESQ
 {
@@ -20,6 +24,22 @@ namespace RESQ
 
                 var manager = (NotificationManager?)GetSystemService(NotificationService);
                 manager?.CreateNotificationChannel(channel);
+            }
+        }
+
+        protected override void OnNewIntent(Intent intent)
+        {
+            base.OnNewIntent(intent);
+
+            if (intent?.GetBooleanExtra("TriggerEmergency", false) == true)
+            {
+                Preferences.Set("EmergencyStatus", "EMERGENCY");
+
+                var svc = MauiApplication.Current.Services.GetService<IEmergencyEventService>();
+
+                _ = svc?.TriggerEmergencyAsync();
+
+                MessagingCenter.Send(this, "EmergencyTriggeredExternally");
             }
         }
 

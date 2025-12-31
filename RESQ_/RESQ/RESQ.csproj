@@ -21,6 +21,8 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<NullabilityInfoContextSupport>true</NullabilityInfoContextSupport>
+		<MauiLinkMode>None</MauiLinkMode>
+
 
 		<!-- Display name -->
 		<ApplicationTitle>RESQ</ApplicationTitle>
@@ -80,6 +82,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\DashboardPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\historypage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\LoginPage.xaml">

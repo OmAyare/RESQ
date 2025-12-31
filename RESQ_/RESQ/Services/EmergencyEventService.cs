@@ -6,6 +6,7 @@ using Android.Telephony;
 using Android.Util;
 using RESQ.Data;
 using RESQ.Models;
+using RESQ.Platforms.Android;
 using RESQ_API.Client;
 
 namespace RESQ.Services
@@ -15,12 +16,7 @@ namespace RESQ.Services
         private readonly LocalDatabase _db;
         private readonly RESQApiClientService _api;
         private readonly ApiSessionService _sessionService;
-
-        //public EmergencyEventService(LocalDatabase db, RESQApiClientService api)
-        //{
-        //    _db = db;
-        //    _api = api;
-        //}
+        private static bool _sessionCreating = false;
 
         public EmergencyEventService(LocalDatabase db, RESQApiClientService api, ApiSessionService sessionService)
         {
@@ -45,9 +41,59 @@ namespace RESQ.Services
 
         public async Task SendUpdateAsync(double lat, double lng)
         {
-            var sessionId = _sessionService.GetSession();
-            if (sessionId == null) return;
+            //if (!IsEmergencyActive())
+            //    return;
 
+            var sessionId = _sessionService.GetSession();
+            // if (sessionId == null) return;
+
+
+            if (sessionId == null && HasInternet() && !_sessionCreating)
+            {
+                _sessionCreating = true;
+                try
+                {
+                    var customeronline = await _db.GetCustomerAsync();
+                    if (customeronline == null)
+                        throw new Exception("❌ No user found.");
+
+                    var location = await Geolocation.Default.GetLocationAsync(
+                        new GeolocationRequest(GeolocationAccuracy.High, TimeSpan.FromSeconds(10))
+                    );
+
+                    var evoline = new EmergencyEvent
+                    {
+                        Cust_Id = customeronline.Cust_Id,
+                        EventDateTime = DateTime.UtcNow,
+                        Status = "EMERGENCY",
+                        Latitude = location?.Latitude ?? 0,
+                        Longitude = location?.Longitude ?? 0
+                    };
+
+                    var apiEvent = MapToApi(evoline, customeronline.UserID.Value);
+
+                    // Create in API + get back SessionId
+                    var created = await _api.CreateEmergencyEventAsync(apiEvent);
+
+                    evoline.SessionId = created.SessionId;
+
+                    evoline.IsSynced = true;
+                    await _db.UpdateEmergencyEventAsync(evoline);
+
+                    _sessionService.SaveSession(created.SessionId);
+
+                    await SendToGoogleSheet(created.SessionId, evoline.Latitude.Value, evoline.Longitude.Value);
+
+                    // Send SMS only once
+                    SendLocationToContactsAsync(created.SessionId);
+
+                    sessionId = _sessionService.GetSession();
+                }
+                finally
+                {
+                    _sessionCreating = false;
+                }
+            }
             var customer = await _db.GetCustomerAsync();
             if (customer == null) return;
 
@@ -57,29 +103,92 @@ namespace RESQ.Services
                 Latitude = lat,
                 Longitude = lng,
                 EventDateTime = DateTime.UtcNow,
-                Status = "ACTIVE",
-                SessionId = sessionId.Value
+                Status = "EMERGENCY",
+                SessionId = sessionId ?? Guid.Empty,
+                IsSynced = sessionId != null && HasInternet()
             };
 
             await _db.SaveEmergencyEventAsync(ev);
 
-            await SendToGoogleSheet(sessionId.Value, lat, lng);
+            if (HasInternet() && sessionId != null)
+            {
+                await SendToGoogleSheet(sessionId.Value, lat, lng);
+                ev.IsSynced = true;
 
-            var apiEvent = MapToApi(ev, customer.UserID.Value);
-            await _api.UpdateSessionAsync(sessionId.Value, apiEvent);
+                var apiEvent = MapToApi(ev, customer.UserID.Value);
+                await _api.UpdateSessionAsync(sessionId.Value, apiEvent);
+            }
+            else
+            {
+                ev.IsSynced = false;
+                await SendOfflineSmsUpdate(ev, customer);
+            }
+
         }
 
         public async Task EndEmergency()
         {
             var sessionId = _sessionService.GetSession();
-            if (sessionId != null)
-                await _api.EndSessionAsync(sessionId.Value);
 
+            var customer = await _db.GetCustomerAsync();
+            if (customer == null) return;
+
+            var safeEvent = new EmergencyEvent
+            {
+                Cust_Id = customer.Cust_Id,
+                EventDateTime = DateTime.UtcNow,
+                Status = "Safe",
+                IsSynced = false
+            };
+
+            await _db.SaveEmergencyEventAsync(safeEvent);
+
+            if (HasInternet() && sessionId != null) 
+            {
+                try
+                {
+                    await _api.EndSessionAsync(sessionId.Value);
+                    safeEvent.IsSynced = true;
+                    await _db.UpdateEmergencyEventAsync(safeEvent);
+                }
+                catch 
+                {
+                    safeEvent.IsSynced = false;
+                    await _db.UpdateEmergencyEventAsync(safeEvent);
+                }
+            }
             _sessionService.ClearSession();
+
+            Preferences.Set("EmergencyStatus", "SAFE");
+            Preferences.Set("EmergencyActive", false);
+            //if (sessionId != null)
+            //    await _api.EndSessionAsync(sessionId.Value);
+            //var lastEvent = await _db.GetLastEmergencyEventAsync();
+            //if (lastEvent != null)
+            //{
+            //    lastEvent.Status = "Safe";
+            //    await _db.UpdateEmergencyEventAsync(lastEvent);
+            //}
         }
 
         public async Task TriggerEmergencyAsync()
         {
+            //if (Preferences.Get("EmergencyStatus", "SAFE") == "EMERGENCY")
+            //    return;
+
+#if ANDROID
+            var context = Android.App.Application.Context;
+            var intent = new Intent(context, typeof(EmergencyService));
+
+            if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.O)
+                context.StartForegroundService(intent);
+            else
+                context.StartService(intent);
+#endif
+
+            Preferences.Set("EmergencyActive", true);
+            Preferences.Set("EmergencyStatus", "EMERGENCY");
+
             var customer = await _db.GetCustomerAsync();
             if (customer == null)
                 throw new Exception("❌ No user found.");
@@ -101,21 +210,130 @@ namespace RESQ.Services
             // Save in SQLite FIRST (same as old method)
             await _db.SaveEmergencyEventAsync(ev);
 
-            var apiEvent = MapToApi(ev, customer.UserID.Value);
+            if (HasInternet())
+            {
+                var apiEvent = MapToApi(ev, customer.UserID.Value);
 
-            // Create in API + get back SessionId
-            var created = await _api.CreateEmergencyEventAsync(apiEvent);
+                // Create in API + get back SessionId
+                var created = await _api.CreateEmergencyEventAsync(apiEvent);
 
-            ev.SessionId = created.SessionId;
+                ev.SessionId = created.SessionId;
 
-            await _db.UpdateEmergencyEventAsync(ev);
+                ev.IsSynced = true;
+                await _db.UpdateEmergencyEventAsync(ev);
 
-            _sessionService.SaveSession(created.SessionId);
+                _sessionService.SaveSession(created.SessionId);
 
-            await SendToGoogleSheet(created.SessionId, ev.Latitude.Value, ev.Longitude.Value);
+                await SendToGoogleSheet(created.SessionId, ev.Latitude.Value, ev.Longitude.Value);
 
-            // Send SMS only once
-            SendLocationToContactsAsync(created.SessionId);
+                // Send SMS only once
+                SendLocationToContactsAsync(created.SessionId);
+            }
+            else
+            {
+                await SendOfflineSmsUpdate(ev, customer);
+            }
+        }
+
+        private async Task SendOfflineSmsUpdate(EmergencyEvent ev, Customer customer)
+        {
+            var contacts = await _db.GetAllEmergencyContactsAsync();
+
+            var msg =
+                $"🚨 EMERGENCY ALERT (NO INTERNET)\n" +
+                $"Name: {customer.FullName}\n" +
+                $"Location: https://maps.google.com/?q={ev.Latitude},{ev.Longitude}\n" +
+                $"Time: {DateTime.Now:HH:mm:ss}";
+
+            var smsPermission = await Permissions.RequestAsync<Permissions.Sms>();
+            if (smsPermission != PermissionStatus.Granted)
+            {
+                Console.WriteLine("❌ SMS permission not granted.");
+                return;
+            }
+            var phonePermission = await Permissions.RequestAsync<Permissions.Phone>();
+            if (phonePermission != PermissionStatus.Granted)
+            {
+                Console.WriteLine("❌ Phone permission not granted. Cannot access SIM.");
+                return;
+            }
+
+            var context = Android.App.Application.Context;
+
+            // ✅ Retrieve correct SmsManager instance for device SIM
+            Android.Telephony.SmsManager smsManager;
+            try
+            {
+                var subMgr = Android.Telephony.SubscriptionManager.From(context);
+
+                if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.LollipopMr1)
+                {
+                    var activeSubs = subMgr?.ActiveSubscriptionInfoList;
+                    if (activeSubs != null && activeSubs.Any())
+                    {
+                        // Prefer the default SMS SIM if available
+                        int subId = Android.Telephony.SubscriptionManager.DefaultSmsSubscriptionId;
+                        if (subId == Android.Telephony.SubscriptionManager.InvalidSubscriptionId)
+                            subId = activeSubs.First().SubscriptionId;
+
+                        smsManager = Android.Telephony.SmsManager.GetSmsManagerForSubscriptionId(subId);
+                        Console.WriteLine($"📡 Using SIM Subscription ID: {subId}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("⚠️ No active SIM subscription detected. Using default SMS manager.");
+                        smsManager = Android.Telephony.SmsManager.Default;
+                    }
+                }
+                else
+                {
+                    smsManager = Android.Telephony.SmsManager.Default;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Could not get SIM info: {ex.Message}");
+                smsManager = Android.Telephony.SmsManager.Default;
+            }
+
+            foreach (var contact in contacts)
+            {
+                if (contact.IsFixed112) continue;
+
+                var phone = contact.PhoneNumber.Trim();
+                if (!phone.StartsWith("+91") && phone.Length == 10)
+                    phone = "+91" + phone;
+
+#if ANDROID
+                try
+                {
+                    var uri = Android.Net.Uri.Parse("smsto:" + phone);
+                    var intent = new Intent(Intent.ActionSendto, uri);
+
+                    intent.PutExtra("sms_body", msg);
+                    intent.AddFlags(ActivityFlags.NewTask);
+
+                    Android.App.Application.Context.StartActivity(intent);
+
+                    Console.WriteLine("📩 Messages app opened");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"⚠️ Could not send SMS to {phone}: {ex.Message}");
+
+                    // 🔹 Fallback for Android 12+ (open SMS app once)
+                    var smsUri = Android.Net.Uri.Parse($"smsto:{phone}");
+                    var intent = new Intent(Intent.ActionSendto, smsUri);
+                    intent.PutExtra("sms_body", msg);
+                    intent.AddFlags(ActivityFlags.NewTask);
+
+                    Android.App.Application.Context.StartActivity(intent);
+
+                    // After opening messages, your AccessibilityService will click SEND automatically
+                    Console.WriteLine("📩 Messages app opened — auto-send will trigger.");
+                }
+#endif
+            }
         }
 
         public async Task SaveAndSendEventAsync(EmergencyEvent ev)
@@ -284,7 +502,7 @@ namespace RESQ.Services
                 //                 $"Location: https://maps.google.com/?q={location.Latitude},{location.Longitude}\n" +
                 //                 $"Time: {DateTime.Now:HH:mm:ss}";
 
-                string message =    $"🚨 EMERGENCY ALERT!\n" +
+                string message = $"🚨 EMERGENCY ALERT!\n" +
                                     $"Name: {customer.FullName}\n" +
                                     $"Track live location here 👇\n" +
                                     $"{GoogleTrackingUrl}?session={sessionId}\n" +
@@ -306,6 +524,7 @@ namespace RESQ.Services
                 }
 
                 var context = Android.App.Application.Context;
+                int subId = Android.Telephony.SubscriptionManager.DefaultSmsSubscriptionId; 
 
                 // ✅ Retrieve correct SmsManager instance for device SIM
                 Android.Telephony.SmsManager smsManager;
@@ -319,7 +538,7 @@ namespace RESQ.Services
                         if (activeSubs != null && activeSubs.Any())
                         {
                             // Prefer the default SMS SIM if available
-                            int subId = Android.Telephony.SubscriptionManager.DefaultSmsSubscriptionId;
+                            subId = Android.Telephony.SubscriptionManager.DefaultSmsSubscriptionId;
                             if (subId == Android.Telephony.SubscriptionManager.InvalidSubscriptionId)
                                 subId = activeSubs.First().SubscriptionId;
 
@@ -403,7 +622,7 @@ namespace RESQ.Services
 
                         Android.App.Application.Context.StartActivity(intent);
 
-                        Console.WriteLine("📩 Messages app opened — AccessibilityService will auto-send.");
+                        Console.WriteLine("📩 Messages app opened");
                         /*************************************************************************************************/
 
                         //var sentIntent = new Intent(context, typeof(RESQ.Platforms.Android.SmsSentReceiver));
@@ -430,6 +649,8 @@ namespace RESQ.Services
                         //smsManager.SendTextMessage(phone, null, message, sentPI, deliveredPI);
                         //  smsManager.SendTextMessage(phone, null, message, null, null);
                         // Console.WriteLine($"✅ SMS send initiated to {phone}");
+                        //SmsManager.GetSmsManagerForSubscriptionId(subId).SendTextMessage(phone, null, message, null, null);
+
 
                     }
                     catch (Exception ex)
@@ -453,6 +674,14 @@ namespace RESQ.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ SendLocationToContactsAsync error: {ex.Message}");
+            }
+            finally 
+            {
+#if ANDROID
+                await Task.Delay(TimeSpan.FromSeconds(45));
+                var number = "+919768135130";
+                CallService.CallOnce(number);
+#endif
             }
         }
 
@@ -483,5 +712,13 @@ namespace RESQ.Services
             }
         }
 
+        private bool HasInternet()
+        {
+            return Connectivity.Current.NetworkAccess == NetworkAccess.Internet;
+        }
+        private bool IsEmergencyActive()
+        {
+            return Preferences.Get("EmergencyStatus", "SAFE") == "EMERGENCY";
+        }
     }
 }

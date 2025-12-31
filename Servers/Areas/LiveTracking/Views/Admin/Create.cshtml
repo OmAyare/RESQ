@@ -1,0 +1,104 @@
+﻿@model Servers.Models.Resqemployee
+
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Areas/LiveTracking/Views/Shared/_Layout1.cshtml";
+
+}
+
+<script src="~/Scripts/jquery-3.7.1.min.js"></script>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.js"></script>
+
+<h5>Create User</h5>
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { enctype = "multipart/form-data", @class = "container-fluid px-4" }))
+{
+    @Html.AntiForgeryToken()
+<div class="row g-4">
+    <!-- Column 1 -->
+    <div class="col-lg-6">
+        @Html.LabelFor(m => m.Username)
+        @Html.TextBoxFor(m => m.Username, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.Username, "", new { @class = "text-danger" })
+
+        @Html.LabelFor(m => m.Email)
+        @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+
+        @Html.LabelFor(m => m.FullName)
+        @Html.TextBoxFor(m => m.FullName, new { @class = "form-control" })
+
+        @Html.LabelFor(m => m.FatherName)
+        @Html.TextBoxFor(m => m.FatherName, new { @class = "form-control" })
+
+        @Html.LabelFor(m => m.MotherName)
+        @Html.TextBoxFor(m => m.MotherName, new { @class = "form-control" })
+
+        @Html.LabelFor(m => m.Branch)
+        @Html.TextBoxFor(m => m.Branch, new { @class = "form-control" })
+
+        @Html.LabelFor(m => m.Gender)
+        @Html.DropDownListFor(m => m.Gender, new SelectList(new[] { "Male", "Female", "Other" }), "Select", new { @class = "form-select" })
+
+        @Html.LabelFor(m => m.Role_id)
+        @Html.DropDownListFor(m => m.Role_id, (SelectList)ViewBag.RoleList, "Select Role", new { @class = "form-select" })
+    </div>
+
+    <!-- Column 2 -->
+    <div class="col-lg-6">
+        @Html.LabelFor(m => m.DateOfBirth)
+        @Html.TextBoxFor(m => m.DateOfBirth, new { @class = "form-control", type = "date" })
+
+        @Html.LabelFor(m => m.JoiningDate)
+        @Html.TextBoxFor(m => m.JoiningDate, new { @class = "form-control", type = "date" })
+
+        @Html.LabelFor(m => m.AadharNumber)
+        @Html.TextBoxFor(m => m.AadharNumber, new { @class = "form-control" })
+
+        @Html.LabelFor(m => m.UANNumber)
+        @Html.TextBoxFor(m => m.UANNumber, new { @class = "form-control" })
+
+        @Html.LabelFor(m => m.BloodGroup)
+        @Html.TextBoxFor(m => m.BloodGroup, new { @class = "form-control" })
+
+        @Html.LabelFor(m => m.PhoneNumber)
+        @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control" })
+
+        @Html.LabelFor(m => m.Password)
+        @Html.TextBoxFor(m => m.Password, new { @class = "form-control" })
+
+        @Html.LabelFor(m => m.Employee_Photo)
+        <input type="file" name="UploadPhoto" accept=".jpg,.jpeg,.png,.gif" class="form-control" />
+    </div>
+
+    <!-- Bank Details Row -->
+    <div class="col-md-6">
+        @Html.LabelFor(m => m.BankAccount_1)
+        @Html.TextBoxFor(m => m.BankAccount_1, new { @class = "form-control" })
+    </div>
+
+    <div class="col-md-6">
+        @Html.LabelFor(m => m.BankAccount_2)
+        @Html.TextBoxFor(m => m.BankAccount_2, new { @class = "form-control" })
+    </div>
+    <script>
+        $('input[name="UploadPhoto"]').on('change', function (e) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#photoPreview').attr('src', e.target.result).show();
+            };
+            reader.readAsDataURL(this.files[0]);
+        });
+    </script>
+
+    <!-- Somewhere in your form -->
+    <img id="photoPreview" src="#" style="display:none; width:100px;" />
+
+    <!-- Submit -->
+    <div class="col-12 mt-3">
+        <input type="submit" class="btn btn-primary" value="Create" />
+        @Html.ActionLink("Back to Users", "User", "Admin", null, new { @class = "btn btn-outline-secondary ms-2" })
+    </div>
+</div>
+}
+

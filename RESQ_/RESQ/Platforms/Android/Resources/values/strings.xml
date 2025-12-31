@@ -2,4 +2,5 @@
 <resources>
 	<string name="app_name">RESQ</string>
 	<string name="accessibility_description">Auto Send SMS Service</string>
+	<string name="resq_access_desc">RESQ: detect emergency triple power-press to trigger SOS</string>
 </resources>

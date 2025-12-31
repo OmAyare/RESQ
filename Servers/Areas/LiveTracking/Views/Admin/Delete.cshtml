@@ -1,0 +1,42 @@
+﻿@model Servers.Models.Resqemployee
+
+@{
+    ViewBag.Title = "Delete User";
+    Layout = "~/Areas/LiveTracking/Views/Shared/_Layout1.cshtml";
+
+}
+
+<h2 class="text-danger">Delete User</h2>
+<h5 class="mb-4">Are you sure you want to delete this user?</h5>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <label class="form-label fw-bold">Username</label>
+        <div class="form-control-plaintext">@Model.Username</div>
+    </div>
+
+    <div class="col-md-6">
+        <label class="form-label fw-bold">Email</label>
+        <div class="form-control-plaintext">@Model.Email</div>
+    </div>
+
+    <div class="col-md-6">
+        <label class="form-label fw-bold">Password</label>
+        <div class="form-control-plaintext">@Model.Password</div>
+    </div>
+
+    <div class="col-md-6">
+        <label class="form-label fw-bold">Role</label>
+        <div class="form-control-plaintext">@Model.Role.Name</div>
+    </div>
+</div>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="d-flex gap-2">
+        <input type="submit" value="Delete" class="btn btn-danger" />
+        @Html.ActionLink("Cancel", "User", "Admin", null, new { @class = "btn btn-outline-secondary" })
+    </div>
+}

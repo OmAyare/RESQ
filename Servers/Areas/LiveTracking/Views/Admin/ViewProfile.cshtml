@@ -1,0 +1,114 @@
+﻿@model Servers.Models.Resqemployee
+@{
+    ViewBag.Title = "My Profile";
+    Layout = "~/Areas/LiveTracking/Views/Shared/_Layout1.cshtml";
+}
+
+<h3 class="mb-3">My Profile</h3>
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success">@ViewBag.Message</div>
+}
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+@using (Html.BeginForm("ViewProfile", "Admin", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.User_id)
+
+    <div class="row">
+        <div class="col-md-4 text-center">
+            <img src="@(Session["PhotoBase64"] != null ? "data:image/png;base64," + Session["PhotoBase64"] : Url.Content("~/image/employeelogo.jpg"))" class="img-thumbnail" width="150" />
+        </div>
+        <div class="col-md-8">
+            <div class="form-group mb-2">
+                <label>Username</label>
+                <input class="form-control" value="@Model.Username" disabled />
+            </div>
+
+            <div class="form-group mb-2">
+                <label>Email</label>
+                <input class="form-control" value="@Model.Email" disabled />
+            </div>
+
+            <div class="form-group mb-2">
+                <label>Full Name</label>
+                @Html.TextBoxFor(model => model.FullName, new { @class = "form-control" })
+            </div>
+
+            <div class="form-group mb-2">
+                <label>Father Name</label>
+                @Html.TextBoxFor(model => model.FatherName, new { @class = "form-control" })
+            </div>
+
+            <div class="form-group mb-2">
+                <label>Mother Name</label>
+                @Html.TextBoxFor(model => model.MotherName, new { @class = "form-control" })
+            </div>
+
+            <div class="form-group mb-2">
+                <label>Gender</label>
+                @Html.TextBoxFor(model => model.Gender, new { @class = "form-control" })
+            </div>
+
+            @*<div class="form-group mb-2">
+            <label>Date of Birth</label>
+            @Html.TextBoxFor(model => model.DateOfBirth, new { @class = "form-control", @type = "date" })
+        </div>*@
+            <label>Date of Birth</label>
+            <input type="date"
+                   name="DateOfBirth"
+                   class="form-control"
+                   value="@(Model.DateOfBirth?.ToString("yyyy-MM-dd"))" />
+
+
+
+
+            <div class="form-group mb-2">
+                <label>Phone Number</label>
+                @Html.TextBoxFor(model => model.PhoneNumber, new { @class = "form-control" })
+            </div>
+
+            <div class="form-group mb-2">
+                <label>Aadhar Number</label>
+                @Html.TextBoxFor(model => model.AadharNumber, new { @class = "form-control" })
+            </div>
+
+            <div class="form-group mb-2">
+                <label>Blood Group</label>
+                @Html.TextBoxFor(model => model.BloodGroup, new { @class = "form-control" })
+            </div>
+
+            <div class="form-group mb-2">
+                <label>UAN Number</label>
+                <input class="form-control" value="@Model.UANNumber" disabled />
+            </div>
+
+            <div class="form-group mb-2">
+                <label>Branch</label>
+                <input class="form-control" value="@Model.Branch" disabled />
+            </div>
+
+            <div class="form-group mb-2">
+                <label>Bank Account 1</label>
+                <input class="form-control" value="@Model.BankAccount_1" disabled />
+            </div>
+
+            <div class="form-group mb-2">
+                <label>Bank Account 2</label>
+                <input class="form-control" value="@Model.BankAccount_2" disabled />
+            </div>
+
+            @*<div class="form-group mb-2">
+                <label>Role</label>
+                <input class="form-control" value="@Model.Role_id" disabled />
+            </div>*@
+
+            <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+        </div>
+    </div>
+}

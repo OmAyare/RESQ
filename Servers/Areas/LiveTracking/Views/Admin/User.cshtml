@@ -1,0 +1,91 @@
+﻿﻿@using PagedList;
+@using PagedList.Mvc;
+
+
+@model IPagedList<Servers.Models.Resqemployee>
+
+
+<link href="~/Content/PagedList.css" rel="stylesheet" />
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/LiveTracking/Views/Shared/_Layout1.cshtml";
+
+}
+<div class="container-fluid px-4">
+    <h2>Index</h2>
+
+    <p class="d-flex flex-wrap gap-2">
+        @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-sm btn-outline-primary" })
+        @Html.ActionLink("Create Role", "Create_Role", null, new { @class = "btn btn-sm btn-outline-primary" })
+    </p>
+
+    <p>
+        @using (Html.BeginForm("User", "Admin", FormMethod.Get))
+        {
+            <div class="row g-2 align-items-center mb-3">
+                <div class="col-auto"><b>Search By:</b></div>
+                <div class="col-auto">@Html.RadioButton("SearchBy", "Username", true) Employee Name</div>
+                <div class="col-auto">@Html.RadioButton("SearchBy", "Role_id") Position</div>
+                <div class="col-auto">@Html.TextBox("Search", ViewBag.CurrentFilter as string, new { @class = "form-control" })</div>
+                <div class="col-auto"><input type="submit" value="Search" class="btn btn-outline-secondary" /></div>
+            </div>
+        }
+    </p>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>@Html.DisplayNameFor(m => m.First().Username)</th>
+                    <th>@Html.DisplayNameFor(m => m.First().Email)</th>
+                    <th>@Html.DisplayNameFor(m => m.First().PhoneNumber)</th>
+                    <th>@Html.DisplayNameFor(m => m.First().Role.Name)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            @if (Model.Count == 0)
+            {
+                <tr>
+                    <td colspan="4">
+                        No Rows Match the Search Criteria
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Username</td>
+                            <td>@item.Email</td>
+                            <td>@item.PhoneNumber</td>
+                            <td>@item.Role.Name</td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                    @Html.ActionLink("Edit", "Edit", new { id = item.User_id }, new { @class = "btn btn-sm btn-outline-primary" })
+                                    @Html.ActionLink("Delete", "Delete", new { id = item.User_id }, new { @class = "btn btn-sm btn-outline-danger" })
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            }
+        </table>
+    </div>
+
+    <div class="mb-3">
+        @Html.PagedListPager(Model, page => Url.Action("User", new { page, SearchBy = Request["SearchBy"], Search = Request["Search"] }),
+            new PagedListRenderOptions()
+            {
+                Display = PagedListDisplayMode.IfNeeded,
+                DisplayPageCountAndCurrentLocation = true
+            })
+    </div>
+
+    <div>
+        @Html.ActionLink("Back to Dashboard", "Dashboard", "Admin", new { }, new { @class = "btn btn-outline-secondary" })
+    </div>
+</div>

@@ -1,0 +1,5 @@
+<linker>
+	<assembly fullname="RESQ">
+		<type fullname="RESQ.Platforms.Android.EmergencyAccessibilityService" preserve="all" />
+	</assembly>
+</linker>

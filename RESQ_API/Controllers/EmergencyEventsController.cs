@@ -136,7 +136,7 @@ namespace RESQ_API.Controllers
                 return NotFound();
 
             foreach (var item in list)
-                item.Status = "Completed";
+                item.Status = "Safe";
 
             await _resq_dbcontext.SaveChangesAsync();
             return NoContent(); // 204

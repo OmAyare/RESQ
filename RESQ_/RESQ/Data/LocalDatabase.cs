@@ -133,6 +133,14 @@ namespace RESQ.Data
             return await _db.Table<EmergencyEvent>().ToListAsync();
         }
 
+        public async Task<EmergencyEvent?> GetLastEmergencyEventAsync()
+        {
+            return await _db.Table<EmergencyEvent>()
+                            .OrderByDescending(e => e.EventDateTime)
+                            .FirstOrDefaultAsync();
+        }
+
+
         public async Task<EmergencyEvent?> GetEmergencyEventByIdAsync(int id)
         {
             return await _db.Table<EmergencyEvent>()
@@ -145,6 +153,26 @@ namespace RESQ.Data
             await _db.DeleteAsync(ev);
         }
 
+        public async Task DeleteOldEmergencyEventsAsync()
+        {
+            var cutoff = DateTime.UtcNow.AddDays(-365);
+
+            var oldEvents = await _db.Table<EmergencyEvent>()
+                                     .Where(e => e.EventDateTime < cutoff)
+                                     .ToListAsync();
+
+            foreach (var ev in oldEvents)
+                await _db.DeleteAsync(ev);
+        }
+
+        /************************************ LOcal to online sync EmergencyEvent **************************************************/
+        public Task<List<EmergencyEvent>> GetUnsyncedEventsAsync()
+        {
+            return _db.Table<EmergencyEvent>()
+                .Where(e => !e.IsSynced)
+                .OrderBy(e => e.EventDateTime)
+                .ToListAsync();
+        }
 
     }
 

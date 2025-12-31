@@ -1,0 +1,310 @@
+﻿@model Servers.Models.Login
+
+@{
+    ViewBag.Title = "Login";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Login</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to top right, #a1c4fd, #c2e9fb);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.5), transparent);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3);
+            animation: float 8s ease-in-out infinite, breathe 3s ease-in-out infinite;
+            backdrop-filter: blur(4px);
+        }
+
+            .bubble.top-right.big {
+                width: 120px;
+                height: 120px;
+                top: 40px;
+                right: 60px;
+            }
+
+            .bubble.top-right.small {
+                width: 60px;
+                height: 60px;
+                top: 100px;
+                right: 140px;
+            }
+
+            .bubble.bottom-left {
+                width: 100px;
+                height: 100px;
+                bottom: 50px;
+                left: 60px;
+            }
+
+        @@keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        @@keyframes breathe {
+            0%, 100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .loginbox {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 40px;
+            border-radius: 20px;
+            width: 380px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+            animation: fadein 1s ease;
+            z-index: 10;
+        }
+
+        @@keyframes fadein {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loginbox h2 {
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: #1e1e1e;
+        }
+
+        .form-control {
+            margin: 10px 0;
+            padding: 12px;
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s ease;
+        }
+
+            .btn-primary:hover {
+                background-color: #0056b3;
+            }
+
+        .text-danger {
+            color: red;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .curtain {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #ffffff 0%, #eeeeee 100%);
+            transform-origin: bottom right;
+            transform: scale(0);
+            display: none;
+            z-index: 9999;
+            animation: peelUp 1.8s ease-in-out forwards;
+        }
+
+        @@keyframes peelUp {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 0.3;
+            }
+
+            50% {
+                transform: scale(1.1) rotate(-5deg);
+                opacity: 0.9;
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .video-section {
+            position: absolute;
+            z-index: 1000;
+            text-align: center;
+            top: 20%;
+        }
+
+            .video-section video {
+                width: 360px;
+                border-radius: 16px;
+                box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+            }
+
+            .video-section h2 {
+                margin-top: 15px;
+                font-size: 20px;
+                color: #222;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="bubble top-right big"></div>
+    <div class="bubble top-right small"></div>
+    <div class="bubble bottom-left"></div>
+
+
+    @if (ViewBag.ShowAnimation == true)
+    {
+        <!-- Welcome Section -->
+        <div class="video-section" id="welcome-section">
+            <video id="welcome-video" autoplay muted playsinline onerror="alert('❌ Video failed to load!')">
+                <source src="@Url.Content("~/Content/Animations/Welcome.mp4")" type="video/mp4" />
+                Your browser does not support the video tag.
+            </video>
+            <h2>Welcome, @Session["Username"]!</h2>
+        </div>
+
+        <div class="curtain" id="curtain"></div>
+
+        @*<script>
+                const video = document.getElementById('welcome-video');
+                const curtain = document.getElementById('curtain');
+                const welcomeSection = document.getElementById('welcome-section');
+
+                video.onloadeddata = function () {
+                    console.log("✅ Video loaded.");
+                };
+
+                video.onplay = function () {
+                    console.log("▶️ Playing video.");
+                };
+
+                video.onerror = function () {
+                    console.error("❌ Video failed to load.");
+                    alert("❌ Video failed to load.");
+                };
+
+                video.onended = function () {
+                    console.log("✅ Video ended, starting curtain.");
+
+                    // Hide the video section
+                    welcomeSection.style.display = 'none';
+
+                    // Show curtain
+                    curtain.style.display = 'block';
+
+                    setTimeout(function () {
+                        var roleId = @ViewBag.RoleId;
+                        var redirectUrl = "";
+
+                        if (roleId === 1)
+                            redirectUrl = '@Url.Action("Dashboard", "Admin", new { area = "Admin" })';
+                        else if (roleId === 2)
+                            redirectUrl = '@Url.Action("Dashboard", "TeamLeader", new { area = "TeamLeader" })';
+                        else if (roleId === 3)
+                            redirectUrl = '@Url.Action("Dashboard", "Recruiter", new { area = "Recruiter" })';
+                        else
+                            redirectUrl = '@Url.Action("NotFound", "Error")';
+
+                        window.location.href = redirectUrl;
+                    }, 2500); // match curtain animation duration
+                };
+            </script>*@
+        <script>
+            const video = document.getElementById('welcome-video');
+            const welcomeSection = document.getElementById('welcome-section');
+            const curtain = document.getElementById('curtain');
+
+             setTimeout(function () {
+                  welcomeSection.style.display = 'none';
+                  curtain.style.display = 'block';
+
+                    setTimeout(function () {
+                        var roleId = @ViewBag.RoleId;
+                        var redirectUrl = "";
+
+                        if (roleId === 1)
+                            redirectUrl = '@Url.Action("Dashboard", "Admin", new { area = "LiveTracking" })';
+                        else if (roleId === 2)
+                            redirectUrl = '@Url.Action("Dashboard", "TeamLeader", new { area = "TeamLeader" })';
+                        else if (roleId === 3)
+                            redirectUrl = '@Url.Action("Dashboard", "Recruiter", new { area = "Recruiter" })';
+                        else
+                            redirectUrl = '@Url.Action("NotFound", "Error")';
+
+                        window.location.href = redirectUrl;
+                    }, 2500); // Curtain animation delay
+                }, 3000); // Video duration (adjust if needed)
+        </script>
+    }
+    else
+    {
+        <!-- Login Form -->
+        <div class="loginbox">
+            <h2>Login</h2>
+            @using (Html.BeginForm(null, null, FormMethod.Post, new { autocomplete = "off" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Username)
+                    @Html.TextBoxFor(model => model.Username, new { @class = "form-control", placeholder = "Enter username" })
+                    @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Password)
+                    @Html.PasswordFor(model => model.Password, new { @class = "form-control", placeholder = "Enter password" })
+                    @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                </div>
+
+                <input type="submit" value="Login" class="btn btn-primary" />
+
+                if (ViewBag.Error != null)
+                {
+                    <div class="text-danger">@Html.Raw(ViewBag.Error)</div>
+                }
+            }
+        </div>
+    }
+</body>
+</html>
