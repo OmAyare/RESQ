@@ -18,7 +18,7 @@ namespace Servers.Models
         [Key]
         public int Id { get; set; }
 
-       // [Remote("IsRoleAvailable", "Admin",ErrorMessage ="Role already Exist")]
+        [Remote("IsRoleAvailable", "Admin",ErrorMessage ="Role already Exist")]
        // [RemoteClientServer("IsRoleAvailable", "Admin", ErrorMessage = "Role already Exist")]
         [Required(ErrorMessage = "The Role Field should not be empty")]
         [StringLength(30)]

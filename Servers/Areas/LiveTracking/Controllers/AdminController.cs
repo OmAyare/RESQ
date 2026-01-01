@@ -445,6 +445,25 @@ namespace Servers.Areas.LiveTracking.Controllers
             return View(rol);
         }
         #endregion
+        [HttpGet]
+        [AuthorizeRoles(1)] // 1 = Admin
+        public JsonResult IsRoleAvailable(string Name)
+        {
+            return Json(!db.Roles.Any(x => x.Name == Name), JsonRequestBehavior.AllowGet);
+        }
 
+        [HttpGet]
+        [AuthorizeRoles(1)] // 1 = Admin
+        public JsonResult IsUsernameAvailable(string Username)
+        {
+            return Json(!db.Resqemployees.Any(u => u.Username == Username), JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpGet]
+        [AuthorizeRoles(1)] // 1 = Admin
+        public JsonResult IsEmailAvailable(string Email)
+        {
+            return Json(!db.Resqemployees.Any(u => u.Email == Email), JsonRequestBehavior.AllowGet);
+        }
     }
 }

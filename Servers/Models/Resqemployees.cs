@@ -20,12 +20,12 @@ namespace Servers.Models
 
 
         [Required(ErrorMessage = "The Name is reuired")]
-      //  [Remote("IsUsernameAvailable", "Admin", ErrorMessage = "Username already Exist")]
+        [Remote("IsUsernameAvailable", "Admin", ErrorMessage = "Username already Exist")]
         [StringLength(50, MinimumLength = 1, ErrorMessage = "Username must be between 3 and 50 characters.")]
         public string Username { get; set; }
 
         [Required(ErrorMessage = "Email is Required")]
-        //[Remote("IsEmailAvailable", "Admin", ErrorMessage = "Email already Exist")]
+        [Remote("IsEmailAvailable", "Admin", ErrorMessage = "Email already Exist")]
         [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
         [Display(Name = "Email")]
         public string Email { get; set; }

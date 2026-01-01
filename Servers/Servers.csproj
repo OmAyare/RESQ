@@ -158,6 +158,10 @@
     <Compile Include="Areas\LiveTracking\LiveTrackingAreaRegistration.cs" />
     <Compile Include="Areas\OperationalTeam\Controllers\OperationController.cs" />
     <Compile Include="Areas\OperationalTeam\OperationalTeamAreaRegistration.cs" />
+    <Compile Include="Common\CurrentDateAttribute.cs" />
+    <Compile Include="Common\DateRangeAttribute.cs" />
+    <Compile Include="Common\ParitalCacheAttribute.cs" />
+    <Compile Include="Common\RemoteClientServer.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Filters\AuthorizeRolesAttribute.cs" />
     <Compile Include="Global.asax.cs">
