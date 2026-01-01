@@ -10,12 +10,12 @@
 
 @{
     ViewBag.Title = "Emergency Records";
-    Layout = "~/Areas/LiveTracking/Views/Shared/_Layout1.cshtml";
+    Layout = "~/Areas/OperationalTeam/Views/Shared/_Layout1.cshtml";
 
 }
 <div class="container-fluid px-4">
     <p>
-        @using (Html.BeginForm("EmergencyRecord", "Admin", FormMethod.Get))
+        @using (Html.BeginForm("EmergencyRecord", "Operation", FormMethod.Get))
         {
             <div class="row g-2 align-items-center mb-3">
                 <div class="col-auto"><b>Search By:</b></div>
@@ -79,6 +79,6 @@
     </div>
 
     <div>
-        @Html.ActionLink("Back to Dashboard", "Dashboard", "Admin", new { }, new { @class = "btn btn-outline-secondary" })
+        @Html.ActionLink("Back to Dashboard", "Dashboard", "Operation", new { }, new { @class = "btn btn-outline-secondary" })
     </div>
 </div>

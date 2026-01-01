@@ -1,0 +1,13 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Page Not Found";
+}
+
+<div class="container mt-5 text-center">
+    <h1 class="display-4 text-danger">404</h1>
+    <p class="lead">Oops! The page you’re looking for doesn’t exist.</p>
+    <p>
+        It may have been moved or deleted. Please check the URL or return to the homepage.
+    </p>
+    <a href="@Url.Action("Index", "Home")" class="btn btn-primary">Go to Home</a>
+</div>

@@ -1,0 +1,45 @@
+﻿@model Servers.Areas.LiveTracking.Data.EmergencyDetails
+
+@{
+    ViewBag.Title = "Emergency Details";
+    Layout = "~/Areas/OperationalTeam/Views/Shared/_Layout1.cshtml";
+}
+
+<div class="container mt-4">
+    <h4 class="mb-3">🚨 Emergency Event Details</h4>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <h5>User Information</h5>
+            <hr />
+            <p><b>Full Name:</b> @Model.FullName</p>
+            <p><b>Username:</b> @Model.UserName</p>
+            <p><b>State:</b> @Model.Region</p>
+            <p><b>District:</b> @Model.District</p>
+            <p><b>Personal Phone:</b> @Model.PersonalPhone</p>
+            <p><b>Emergency Phone:</b> @Model.EmergencyPhone</p>
+
+            <h5 class="mt-4">Event Information</h5>
+            <hr />
+            <p><b>Date & Time:</b> @Model.EventDateTime</p>
+            <p><b>Status:</b> @Model.Status</p>
+            <p><b>Latitude:</b> @Model.Latitude</p>
+            <p><b>Longitude:</b> @Model.Longitude</p>
+
+            <h5 class="mt-4">Live Tracking</h5>
+            <hr />
+            <a class="btn btn-danger"
+               target="_blank"
+               href="@ViewBag.TrackingMessage">
+                📍 Open Live Location
+            </a>
+
+        </div>
+    </div>
+
+    <div class="mt-3">
+        @Html.ActionLink("⬅ Back to Records", "EmergencyRecord", "Operation",
+            null, new { @class = "btn btn-outline-secondary" })
+    </div>
+</div>

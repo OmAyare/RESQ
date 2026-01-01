@@ -84,6 +84,10 @@ namespace Servers.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        public ActionResult NotFound()
+        {
+            return View();
+        }
 
     }
 }

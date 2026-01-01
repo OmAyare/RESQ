@@ -173,7 +173,7 @@ namespace Servers.Areas.LiveTracking.Controllers
         //}
 
         [HttpGet]
-        [Route("Admin/User/Create")]
+        [Route("LiveTracking/Admin/User/Create")]
         [AuthorizeRoles(1)] // 1 = Admin
         public ActionResult Create()
         {

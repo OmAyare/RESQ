@@ -265,11 +265,11 @@
                         if (roleId === 1)
                             redirectUrl = '@Url.Action("Dashboard", "Admin", new { area = "LiveTracking" })';
                         else if (roleId === 2)
-                            redirectUrl = '@Url.Action("Dashboard", "TeamLeader", new { area = "TeamLeader" })';
+                            redirectUrl = '@Url.Action("Dashboard", "Operation", new { area = "OperationalTeam" })';
                         @*else if (roleId === 3)
                             redirectUrl = '@Url.Action("Dashboard", "Recruiter", new { area = "Recruiter" })';*@
                         else
-                            redirectUrl = '@Url.Action("NotFound", "Error")';
+                            redirectUrl = '@Url.Action("NotFound", "Home")';
 
                         window.location.href = redirectUrl;
                     }, 2500); // Curtain animation delay
