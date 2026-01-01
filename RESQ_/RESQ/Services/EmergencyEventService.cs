@@ -102,7 +102,7 @@ namespace RESQ.Services
                 Cust_Id = customer.Cust_Id,
                 Latitude = lat,
                 Longitude = lng,
-                EventDateTime = DateTime.UtcNow,
+                EventDateTime = DateTime.Now,
                 Status = "EMERGENCY",
                 SessionId = sessionId ?? Guid.Empty,
                 IsSynced = sessionId != null && HasInternet()
@@ -133,10 +133,14 @@ namespace RESQ.Services
             var customer = await _db.GetCustomerAsync();
             if (customer == null) return;
 
+            var location = await Geolocation.GetLastKnownLocationAsync();
+
             var safeEvent = new EmergencyEvent
             {
                 Cust_Id = customer.Cust_Id,
-                EventDateTime = DateTime.UtcNow,
+                EventDateTime = DateTime.Now,
+                Latitude = location?.Latitude,
+                Longitude = location?.Longitude,
                 Status = "Safe",
                 IsSynced = false
             };
@@ -623,6 +627,7 @@ namespace RESQ.Services
                         Android.App.Application.Context.StartActivity(intent);
 
                         Console.WriteLine("📩 Messages app opened");
+                        await Task.Delay(TimeSpan.FromSeconds(3));
                         /*************************************************************************************************/
 
                         //var sentIntent = new Intent(context, typeof(RESQ.Platforms.Android.SmsSentReceiver));

@@ -154,6 +154,7 @@
     <Compile Include="Areas\LiveTracking\Data\user.cs">
       <DependentUpon>ClientDataModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="Areas\LiveTracking\Data\Users.cs" />
     <Compile Include="Areas\LiveTracking\LiveTrackingAreaRegistration.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Filters\AuthorizeRolesAttribute.cs" />

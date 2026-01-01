@@ -13,17 +13,28 @@
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">
 
-            <Entry Placeholder="Full Name" Text="{Binding FullName}" TextColor="White"/>
+            <Entry
+                Placeholder="Full Name"
+                Text="{Binding FullName}"
+                TextColor="White" />
             <Entry
                 Keyboard="Email"
                 Placeholder="Email"
-                Text="{Binding Username}"  TextColor="White"/>
+                Text="{Binding Username}"
+                TextColor="White" />
             <Entry
                 IsPassword="True"
                 Placeholder="Password"
-                Text="{Binding Password}"  TextColor="White"/>
-            <Entry Placeholder="District" Text="{Binding District}"  TextColor="White" />
-            <Entry Placeholder="Region" Text="{Binding Region}"  TextColor="White"/>
+                Text="{Binding Password}"
+                TextColor="White" />
+            <Entry
+                Placeholder="State"
+                Text="{Binding Region}"
+                TextColor="White" />
+            <Entry
+                Placeholder="District"
+                Text="{Binding District}"
+                TextColor="White" />
             <HorizontalStackLayout>
                 <Label
                     Margin="0,0,5,0"
@@ -34,7 +45,8 @@
                 <Entry
                     Keyboard="Telephone"
                     Placeholder="Enter phone number"
-                    Text="{Binding PersonalPhone}"  TextColor="White"/>
+                    Text="{Binding PersonalPhone}"
+                    TextColor="White" />
             </HorizontalStackLayout>
 
             <HorizontalStackLayout>
@@ -47,7 +59,8 @@
                 <Entry
                     Keyboard="Telephone"
                     Placeholder="Family Phone"
-                    Text="{Binding FamilyPhone}"  TextColor="White"/>
+                    Text="{Binding FamilyPhone}"
+                    TextColor="White" />
             </HorizontalStackLayout>
 
             <Button

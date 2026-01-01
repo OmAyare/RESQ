@@ -20,7 +20,7 @@
             <div class="row g-2 align-items-center mb-3">
                 <div class="col-auto"><b>Search By:</b></div>
                 <div class="col-auto">@Html.RadioButton("SearchBy", "full_Name", true) Name</div>
-                <div class="col-auto">@Html.RadioButton("SearchBy", "Region") Region </div>
+                <div class="col-auto">@Html.RadioButton("SearchBy", "Region") State </div>
                 <div class="col-auto">@Html.RadioButton("SearchBy", "District") District </div>
                 <div class="col-auto">@Html.TextBox("Search", ViewBag.CurrentFilter as string, new { @class = "form-control" })</div>
                 <div class="col-auto"><input type="submit" value="Search" class="btn btn-outline-secondary" /></div>

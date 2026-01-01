@@ -5,7 +5,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
-namespace WebApplication1.Models
+namespace Servers.Models
 {
     [MetadataType(typeof(RoleMetaData))]
     public partial class Role
