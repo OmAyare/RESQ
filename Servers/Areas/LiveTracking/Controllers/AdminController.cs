@@ -25,6 +25,7 @@ namespace Servers.Areas.LiveTracking.Controllers
             if (Session["UserId"] == null || (int)Session["RoleId"] != 1)
                 return RedirectToAction("Index", "Home");
 
+            Response.AddHeader("Refresh", "5");
             int selectedYear = year ?? DateTime.Now.Year;
             var data = Resqdb.Emergency_Events
                 .Where(x => x.EventDateTime.Year == selectedYear)
@@ -66,6 +67,8 @@ namespace Servers.Areas.LiveTracking.Controllers
         [AuthorizeRoles(1)]
         public ActionResult RegisterRecord(int? page, string searchBy, string search)
         {
+
+            Response.AddHeader("Refresh", "5");
             var users = Resqdb.users.AsQueryable().ToList().ToPagedList(page ?? 1, 5);
             if (searchBy == "Username")
             {
@@ -84,6 +87,8 @@ namespace Servers.Areas.LiveTracking.Controllers
 
         public ActionResult EmergencyRecord(int? page, string searchBy, string search)
         {
+
+            Response.AddHeader("Refresh", "5");
             int pageSize = 5;
             int pageNumber = page ?? 1;
 
@@ -445,6 +450,8 @@ namespace Servers.Areas.LiveTracking.Controllers
             return View(rol);
         }
         #endregion
+
+        /************************************* Validation *******************************************/
         [HttpGet]
         [AuthorizeRoles(1)] // 1 = Admin
         public JsonResult IsRoleAvailable(string Name)

@@ -19,6 +19,8 @@ namespace Servers.Areas.OperationalTeam.Controllers
         [AuthorizeRoles(2)]
         public ActionResult Dashboard(int? year)
         {
+
+            Response.AddHeader("Refresh", "5");
             if (Session["UserId"] == null || (int)Session["RoleId"] != 2)
                 return RedirectToAction("Index", "Home");
 
@@ -49,6 +51,8 @@ namespace Servers.Areas.OperationalTeam.Controllers
         [Route("OperationalTeam/RegisterRecord")]
         public ActionResult RegisterRecord(int? page, string searchBy, string search)
         {
+
+            Response.AddHeader("Refresh", "5");
             var users = Resqdb.users.AsQueryable().ToList().ToPagedList(page ?? 1, 5);
             if (searchBy == "Username")
             {
@@ -68,6 +72,8 @@ namespace Servers.Areas.OperationalTeam.Controllers
         [Route("OperationalTeam/EmergencyRecord")]
         public ActionResult EmergencyRecord(int? page, string searchBy, string search)
         {
+
+            Response.AddHeader("Refresh", "5");
             int pageSize = 5;
             int pageNumber = page ?? 1;
 
