@@ -13,15 +13,36 @@
     Layout = "~/Areas/LiveTracking/Views/Shared/_Layout1.cshtml";
 
 }
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    setInterval(function () {
+        var url = '@Url.Action("RegisterRecord", "Admin")';
+
+        $.get(url, {
+            page: '@Request["page"]',
+            searchBy: '@Request["SearchBy"]',
+            search: '@Request["Search"]'
+        }, function (data) {
+            var newBody = $(data).find(".table-responsive").html();
+            $(".table-responsive").html(newBody);
+        });
+    }, 5000); // 5 seconds
+</script>
+
+
 <div class="container-fluid px-4">
     <p>
+        @{
+            string currentSearchBy = ViewBag.CurrentSearchBy as string;
+        }
         @using (Html.BeginForm("RegisterRecord", "Admin", FormMethod.Get))
         {
             <div class="row g-2 align-items-center mb-3">
                 <div class="col-auto"><b>Search By:</b></div>
-                <div class="col-auto">@Html.RadioButton("SearchBy", "full_Name", true) Name</div>
-                <div class="col-auto">@Html.RadioButton("SearchBy", "Region") State </div>
-                <div class="col-auto">@Html.RadioButton("SearchBy", "District") District </div>
+                <div class="col-auto">@Html.RadioButton("SearchBy", "full_Name", string.IsNullOrEmpty(currentSearchBy) || currentSearchBy == "FullName") Name</div>
+                <div class="col-auto">@Html.RadioButton("SearchBy", "Region", currentSearchBy == "Region") State </div>
+                <div class="col-auto">@Html.RadioButton("SearchBy", "District", currentSearchBy == "District") District </div>
                 <div class="col-auto">@Html.TextBox("Search", ViewBag.CurrentFilter as string, new { @class = "form-control" })</div>
                 <div class="col-auto"><input type="submit" value="Search" class="btn btn-outline-secondary" /></div>
             </div>
@@ -62,11 +83,11 @@
                             <td>@item.Region</td>
                             <td>@item.District</td>
                             @*<td>
-                                <div class="d-flex justify-content-center gap-2 flex-wrap">
-                                    @Html.ActionLink("Edit", "Edit", new { id = item.User_id }, new { @class = "btn btn-sm btn-outline-primary" })
-                                    @Html.ActionLink("Delete", "Delete", new { id = item.User_id }, new { @class = "btn btn-sm btn-outline-danger" })
-                                </div>
-                            </td>*@
+                                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                        @Html.ActionLink("Edit", "Edit", new { id = item.User_id }, new { @class = "btn btn-sm btn-outline-primary" })
+                                        @Html.ActionLink("Delete", "Delete", new { id = item.User_id }, new { @class = "btn btn-sm btn-outline-danger" })
+                                    </div>
+                                </td>*@
                         </tr>
                     }
                 </tbody>

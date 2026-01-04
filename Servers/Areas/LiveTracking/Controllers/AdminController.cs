@@ -19,25 +19,43 @@ namespace Servers.Areas.LiveTracking.Controllers
         private EmployeeContext db = new EmployeeContext();
         private ResqUserContext Resqdb = new ResqUserContext();
         // GET: LiveTracking/Admin
+        //public ActionResult Dashboard(int? year)
+        //{
+
+        //    if (Session["UserId"] == null || (int)Session["RoleId"] != 1)
+        //        return RedirectToAction("Index", "Home");
+
+        //    Response.AddHeader("Refresh", "5");
+        //    int selectedYear = year ?? DateTime.Now.Year;
+        //    var data = Resqdb.Emergency_Events
+        //        .Where(x => x.EventDateTime.Year == selectedYear)
+        //        .GroupBy(x => x.user.Region.Trim())
+        //        .Select(g => new
+        //        {
+        //            State = g.Key,
+        //            Count = g.Count()
+        //        })
+        //        .ToList();
+
+        //    ViewBag.StateCounts = data;
+        //    ViewBag.SelectedYear = selectedYear;
+        //    ViewBag.Years = Resqdb.Emergency_Events
+        //        .Select(e => e.EventDateTime.Year)
+        //        .Distinct()
+        //        .OrderByDescending(y => y)
+        //        .ToList();
+
+        //    return View();
+        //}
+
+        [AuthorizeRoles(1)]
         public ActionResult Dashboard(int? year)
         {
-
             if (Session["UserId"] == null || (int)Session["RoleId"] != 1)
                 return RedirectToAction("Index", "Home");
 
-            Response.AddHeader("Refresh", "5");
             int selectedYear = year ?? DateTime.Now.Year;
-            var data = Resqdb.Emergency_Events
-                .Where(x => x.EventDateTime.Year == selectedYear)
-                .GroupBy(x => x.user.Region.Trim())
-                .Select(g => new
-                {
-                    State = g.Key,
-                    Count = g.Count()
-                })
-                .ToList();
 
-            ViewBag.StateCounts = data;
             ViewBag.SelectedYear = selectedYear;
             ViewBag.Years = Resqdb.Emergency_Events
                 .Select(e => e.EventDateTime.Year)
@@ -46,6 +64,22 @@ namespace Servers.Areas.LiveTracking.Controllers
                 .ToList();
 
             return View();
+        }
+
+        [AuthorizeRoles(1)]
+        public JsonResult GetDashboardData(int year)
+        {
+            var data = Resqdb.Emergency_Events
+                .Where(x => x.EventDateTime.Year == year)
+                .GroupBy(x => x.user.Region.Trim())
+                .Select(g => new
+                {
+                    State = g.Key,
+                    Count = g.Count()
+                })
+                .ToList();
+
+            return Json(data, JsonRequestBehavior.AllowGet);
         }
 
         #region Users
@@ -68,27 +102,57 @@ namespace Servers.Areas.LiveTracking.Controllers
         public ActionResult RegisterRecord(int? page, string searchBy, string search)
         {
 
-            Response.AddHeader("Refresh", "5");
-            var users = Resqdb.users.AsQueryable().ToList().ToPagedList(page ?? 1, 5);
-            if (searchBy == "Username")
+            //  Response.AddHeader("Refresh", "5");
+            //var users = Resqdb.users.AsQueryable().ToList().ToPagedList(page ?? 1, 5);
+            //if (searchBy == "Username")
+            //{
+            //    return View(Resqdb.users.Where(x => x.full_Name.StartsWith(search) || search == null).ToList().ToPagedList(page ?? 1, 5));
+            //}
+            //else if(searchBy == "Region")
+            //{
+            //    return View(Resqdb.users.Where(x => x.Region.StartsWith(search) || search == null).ToList().ToPagedList(page ?? 1, 5));
+            //}
+            //else
+            //{
+            //    return View(Resqdb.users.Where(x => x.District.StartsWith(search) || search == null).ToList().ToPagedList(page ?? 1, 5));
+            //}
+            //ViewBag.CurrentSearch = search;
+            //ViewBag.CurrentSearchBy = searchBy;
+            //return View(users);
+            int pageSize = 5;
+            int pageNumber = page ?? 1;
+
+            var query = Resqdb.users.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
             {
-                return View(Resqdb.users.Where(x => x.full_Name.StartsWith(search) || search == null).ToList().ToPagedList(page ?? 1, 5));
+                if (searchBy == "Username")
+                {
+                    query = query.Where(x => x.full_Name.StartsWith(search));
+                }
+                else if (searchBy == "Region")
+                {
+                    query = query.Where(x => x.Region.StartsWith(search));
+                }
+                else if (searchBy == "District")
+                {
+                    query = query.Where(x => x.District.StartsWith(search));
+                }
             }
-            else if(searchBy == "Region")
-            {
-                return View(Resqdb.users.Where(x => x.Region.StartsWith(search) || search == null).ToList().ToPagedList(page ?? 1, 5));
-            }
-            else
-            {
-                return View(Resqdb.users.Where(x => x.District.StartsWith(search) || search == null).ToList().ToPagedList(page ?? 1, 5));
-            }
-            return View(users);
+
+            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentSearchBy = searchBy;
+
+            return View(query
+                .OrderBy(x => x.full_Name)
+                .ToPagedList(pageNumber, pageSize));
         }
 
         public ActionResult EmergencyRecord(int? page, string searchBy, string search)
         {
 
-            Response.AddHeader("Refresh", "5");
+            // Response.AddHeader("Refresh", "5");
+ 
             int pageSize = 5;
             int pageNumber = page ?? 1;
 
@@ -114,7 +178,8 @@ namespace Servers.Areas.LiveTracking.Controllers
                 else if (searchBy == "District")
                     query = query.Where(x => x.District.StartsWith(search));
             }
-
+            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentSearchBy = searchBy;
             var result = query.ToPagedList(pageNumber, pageSize);
 
             return View(result);
