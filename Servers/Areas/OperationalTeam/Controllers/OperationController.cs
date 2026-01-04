@@ -19,23 +19,11 @@ namespace Servers.Areas.OperationalTeam.Controllers
         [AuthorizeRoles(2)]
         public ActionResult Dashboard(int? year)
         {
-
-            Response.AddHeader("Refresh", "5");
-            if (Session["UserId"] == null || (int)Session["RoleId"] != 2)
+            if (Session["UserId"] == null || (int)Session["RoleId"] != 1)
                 return RedirectToAction("Index", "Home");
 
             int selectedYear = year ?? DateTime.Now.Year;
-            var data = Resqdb.Emergency_Events
-                .Where(x => x.EventDateTime.Year == selectedYear)
-                .GroupBy(x => x.user.Region.Trim())
-                .Select(g => new
-                {
-                    State = g.Key,
-                    Count = g.Count()
-                })
-                .ToList();
 
-            ViewBag.StateCounts = data;
             ViewBag.SelectedYear = selectedYear;
             ViewBag.Years = Resqdb.Emergency_Events
                 .Select(e => e.EventDateTime.Year)
@@ -46,34 +34,101 @@ namespace Servers.Areas.OperationalTeam.Controllers
             return View();
         }
 
+        [AuthorizeRoles(2)]
+        public JsonResult GetDashboardData(int year)
+        {
+            var data = Resqdb.Emergency_Events
+                .Where(x => x.EventDateTime.Year == year)
+                .GroupBy(x => x.user.Region.Trim())
+                .Select(g => new
+                {
+                    State = g.Key,
+                    Count = g.Count()
+                })
+                .ToList();
+
+            return Json(data, JsonRequestBehavior.AllowGet);
+        }
+        //public ActionResult Dashboard(int? year)
+        //{
+
+        //    Response.AddHeader("Refresh", "5");
+        //    if (Session["UserId"] == null || (int)Session["RoleId"] != 2)
+        //        return RedirectToAction("Index", "Home");
+
+        //    int selectedYear = year ?? DateTime.Now.Year;
+        //    var data = Resqdb.Emergency_Events
+        //        .Where(x => x.EventDateTime.Year == selectedYear)
+        //        .GroupBy(x => x.user.Region.Trim())
+        //        .Select(g => new
+        //        {
+        //            State = g.Key,
+        //            Count = g.Count()
+        //        })
+        //        .ToList();
+
+        //    ViewBag.StateCounts = data;
+        //    ViewBag.SelectedYear = selectedYear;
+        //    ViewBag.Years = Resqdb.Emergency_Events
+        //        .Select(e => e.EventDateTime.Year)
+        //        .Distinct()
+        //        .OrderByDescending(y => y)
+        //        .ToList();
+
+        //    return View();
+        //}
+
         #region Users
         [AuthorizeRoles(2)]
         [Route("OperationalTeam/RegisterRecord")]
         public ActionResult RegisterRecord(int? page, string searchBy, string search)
         {
+            //var users = Resqdb.users.AsQueryable().ToList().ToPagedList(page ?? 1, 5);
+            //if (searchBy == "Username")
+            //{
+            //    return View(Resqdb.users.Where(x => x.full_Name.StartsWith(search) || search == null).ToList().ToPagedList(page ?? 1, 5));
+            //}
+            //else if (searchBy == "Region")
+            //{
+            //    return View(Resqdb.users.Where(x => x.Region.StartsWith(search) || search == null).ToList().ToPagedList(page ?? 1, 5));
+            //}
+            //else
+            //{
+            //    return View(Resqdb.users.Where(x => x.District.StartsWith(search) || search == null).ToList().ToPagedList(page ?? 1, 5));
+            //}
+            //return View(users);
+            int pageSize = 5;
+            int pageNumber = page ?? 1;
 
-            Response.AddHeader("Refresh", "5");
-            var users = Resqdb.users.AsQueryable().ToList().ToPagedList(page ?? 1, 5);
-            if (searchBy == "Username")
+            var query = Resqdb.users.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
             {
-                return View(Resqdb.users.Where(x => x.full_Name.StartsWith(search) || search == null).ToList().ToPagedList(page ?? 1, 5));
+                if (searchBy == "Username")
+                {
+                    query = query.Where(x => x.full_Name.StartsWith(search));
+                }
+                else if (searchBy == "Region")
+                {
+                    query = query.Where(x => x.Region.StartsWith(search));
+                }
+                else if (searchBy == "District")
+                {
+                    query = query.Where(x => x.District.StartsWith(search));
+                }
             }
-            else if (searchBy == "Region")
-            {
-                return View(Resqdb.users.Where(x => x.Region.StartsWith(search) || search == null).ToList().ToPagedList(page ?? 1, 5));
-            }
-            else
-            {
-                return View(Resqdb.users.Where(x => x.District.StartsWith(search) || search == null).ToList().ToPagedList(page ?? 1, 5));
-            }
-            return View(users);
+
+            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentSearchBy = searchBy;
+
+            return View(query
+                .OrderBy(x => x.full_Name)
+                .ToPagedList(pageNumber, pageSize));
         }
 
         [Route("OperationalTeam/EmergencyRecord")]
         public ActionResult EmergencyRecord(int? page, string searchBy, string search)
         {
-
-            Response.AddHeader("Refresh", "5");
             int pageSize = 5;
             int pageNumber = page ?? 1;
 
@@ -99,7 +154,8 @@ namespace Servers.Areas.OperationalTeam.Controllers
                 else if (searchBy == "District")
                     query = query.Where(x => x.District.StartsWith(search));
             }
-
+            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentSearchBy = searchBy;
             var result = query.ToPagedList(pageNumber, pageSize);
 
             return View(result);

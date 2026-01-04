@@ -4,7 +4,6 @@
 }
 
 <h3>India Emergency Activity Dashboard</h3>
-
 <form method="get">
     <label><b>Select Year:</b></label>
     <select name="year" onchange="this.form.submit()">
@@ -18,38 +17,55 @@
 <div id="indiaMap" style="max-width:1100px;">
     @Html.Raw(System.IO.File.ReadAllText(Server.MapPath("~/Content/maps/india.svg")))
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
-const stateData = @Html.Raw(Json.Encode(ViewBag.StateCounts));
+    const selectedYear = @ViewBag.SelectedYear;
 
-const countMap = {};
-stateData.forEach(s => {
-    if (s.State) {
-        countMap[s.State.trim().toLowerCase()] = s.Count;
+    function updateMap(data) {
+
+        const countMap = {};
+        data.forEach(s => {
+            if (s.State) {
+                countMap[s.State.trim().toLowerCase()] = s.Count;
+            }
+        });
+
+        document.querySelectorAll("svg text").forEach(t => t.remove());
+
+        document.querySelectorAll("svg path[aria-label]").forEach(path => {
+
+            const stateName = path.getAttribute("aria-label").trim().toLowerCase();
+            const count = countMap[stateName];
+
+            if (count === undefined) return;
+
+            const bbox = path.getBBox();
+            const svg = path.ownerSVGElement;
+
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", bbox.x + bbox.width / 2);
+            text.setAttribute("y", bbox.y + bbox.height / 2);
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("dominant-baseline", "middle");
+            text.setAttribute("font-size", "12");
+            text.setAttribute("font-weight", "bold");
+            text.setAttribute("fill", "#ffffff");
+
+            text.textContent = count;
+            svg.appendChild(text);
+        });
     }
-});
 
-// Select SVG paths using aria-label
-document.querySelectorAll("svg path[aria-label]").forEach(path => {
+    function refreshDashboard() {
+        $.get('@Url.Action("GetDashboardData", "Operation")',
+            { year: selectedYear },
+            function (data) {
+                updateMap(data);
+            });
+    }
 
-    const stateName = path.getAttribute("aria-label").trim().toLowerCase();
-    const count = countMap[stateName];
+    refreshDashboard();
 
-    if (count === undefined) return;
-
-    const bbox = path.getBBox();
-    const svg = path.ownerSVGElement;
-
-    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    text.setAttribute("x", bbox.x + bbox.width / 2);
-    text.setAttribute("y", bbox.y + bbox.height / 2);
-    text.setAttribute("text-anchor", "middle");
-    text.setAttribute("dominant-baseline", "middle");
-    text.setAttribute("font-size", "12");
-    text.setAttribute("font-weight", "bold");
-    text.setAttribute("fill", "#ffffff"); // visible on black map
-
-    text.textContent = count;
-
-    svg.appendChild(text);
-});
+    setInterval(refreshDashboard, 5000);
 </script>
