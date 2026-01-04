@@ -13,8 +13,10 @@ namespace RESQ
         private readonly ApiSessionService _sessionService;
         private RESQApiClientService _api;
         private bool _isSyncing;
-        public App(LoginPage loginPage, LocalDatabase db, ApiSessionService session, RESQApiClientService api)
+        public static IServiceProvider Services { get; private set; }
+        public App(LoginPage loginPage, LocalDatabase db, ApiSessionService session, RESQApiClientService api,IServiceProvider service)
         {
+            Services = service;
             _db = db;
             _sessionService = session;
             _api = api;
@@ -24,11 +26,36 @@ namespace RESQ
 
             InitializeComponent();
 
-            MainPage = new NavigationPage(loginPage)
+            //MainPage = new NavigationPage(loginPage)
+            //{
+            //    BarBackgroundColor = Colors.Transparent,
+            //    BarTextColor = Colors.Transparent
+            //};
+            SetRootPage();
+        }
+        private void SetRootPage()
+        {
+            bool emergency = Preferences.Get("EmergencyActive", false);
+
+            if (emergency)
             {
-                BarBackgroundColor = Colors.Transparent,
-                BarTextColor = Colors.Transparent
-            };
+                MainPage = new NavigationPage(
+                    Services.GetRequiredService<EmergencyInfoPage>());
+            }
+            else
+            {
+                MainPage = new NavigationPage(
+                    Services.GetRequiredService<LoginPage>());
+            }
+        }
+        protected override void OnStart()
+        {
+            SetRootPage();
+        }
+
+        protected override void OnResume()
+        {
+            SetRootPage();
         }
 
         private async void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)

@@ -72,9 +72,24 @@ namespace RESQ.ViewModels
                 StatusColor = Colors.Red;
                 StartEmergencyMode(); 
             }
-            var intent = new Intent(Android.Provider.Settings.ActionAccessibilitySettings);
-            intent.AddFlags(ActivityFlags.NewTask);
-            Android.App.Application.Context.StartActivity(intent);
+        
+
+#if ANDROID
+            bool enabled = AccessibilityHelper.IsAccessibilityEnabled();
+            bool askedBefore = Preferences.Get("AccessibilityAsked", false);
+
+            if (!enabled)
+            {
+                Preferences.Set("AccessibilityAsked", true);
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    var intent = new Intent(Android.Provider.Settings.ActionAccessibilitySettings);
+                    intent.AddFlags(ActivityFlags.NewTask);
+                    Android.App.Application.Context.StartActivity(intent);
+                });
+            }
+#endif
 
         }
 
@@ -98,14 +113,14 @@ namespace RESQ.ViewModels
                     "OK");
             }
 
-            if (!Preferences.Get("AccessibilityOpened", false))
-            {
-                var intent = new Intent(Android.Provider.Settings.ActionAccessibilitySettings);
-                intent.AddFlags(ActivityFlags.NewTask);
-                Android.App.Application.Context.StartActivity(intent);
+            //if (!Preferences.Get("AccessibilityOpened", false))
+            //{
+            //    var intent = new Intent(Android.Provider.Settings.ActionAccessibilitySettings);
+            //    intent.AddFlags(ActivityFlags.NewTask);
+            //    Android.App.Application.Context.StartActivity(intent);
 
-                Preferences.Set("AccessibilityOpened", true);
-            }
+            //    Preferences.Set("AccessibilityOpened", true);
+            //}
 
             await Permissions.RequestAsync<Permissions.Phone>();
 

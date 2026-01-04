@@ -56,6 +56,9 @@ namespace RESQ
             builder.Services.AddTransient<LocalEventHistory>();
             builder.Services.AddTransient<historypage>();
 
+            builder.Services.AddTransient<EmergencyInfoPage>();
+            builder.Services.AddTransient<EmergencyInfoViewModel>();
+
             var db = builder.Services.BuildServiceProvider().GetService<LocalDatabase>();
             _ = db.DeleteOldEmergencyEventsAsync();
 
