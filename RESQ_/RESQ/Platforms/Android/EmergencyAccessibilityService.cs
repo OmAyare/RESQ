@@ -69,10 +69,25 @@ namespace RESQ.Platforms.Android
 
         protected override bool OnKeyEvent(KeyEvent e)
         {
-            PowerButtonDetector.OnKey(e);
-            return true;
-            // return base.OnKeyEvent(e);
+            if (e == null) return false;
+
+            bool consumed = PowerButtonDetector.OnKey(e);
+
+            if (consumed)
+            {
+                Log.Info("RESQ", "[Accessibility] Key event consumed by emergency trigger");
+                return true; // ✅ stop propagation
+            }
+
+            return false; // ✅ return false (NOT base.OnKeyEvent) so volume works normally
+                          // base.OnKeyEvent(e) can sometimes swallow the event — avoid it
         }
+        //protected override bool OnKeyEvent(KeyEvent e)
+        //{
+        //    PowerButtonDetector.OnKey(e);
+        //    return true;
+        //    // return base.OnKeyEvent(e);
+        //}
 
     }
 

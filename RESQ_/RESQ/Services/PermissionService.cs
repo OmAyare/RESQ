@@ -17,6 +17,12 @@ namespace RESQ.Services
             if (status != PermissionStatus.Granted)
                 status = await Permissions.RequestAsync<Permissions.Sms>();
 
+            //audio
+            var Audiorec = await Permissions.RequestAsync<Permissions.Microphone>();
+            if (Audiorec != PermissionStatus.Granted)
+            {
+                Audiorec = await Permissions.RequestAsync<Permissions.Microphone>();
+            }
 
             // Location
             var locationStatus = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
@@ -51,6 +57,7 @@ namespace RESQ.Services
                    backgroundStatus == PermissionStatus.Granted &&
                    contactsStatus == PermissionStatus.Granted &&
                    phoneStatus == PermissionStatus.Granted &&
+                   Audiorec == PermissionStatus.Granted &&
                    status == PermissionStatus.Granted;
 
         }

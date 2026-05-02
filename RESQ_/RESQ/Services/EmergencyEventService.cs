@@ -18,6 +18,9 @@ namespace RESQ.Services
         private readonly ApiSessionService _sessionService;
         private static bool _sessionCreating = false;
 
+        private AudioRecorderManager _audioRecorder;
+        private CancellationTokenSource _audioDelayCts;
+
         public EmergencyEventService(LocalDatabase db, RESQApiClientService api, ApiSessionService sessionService)
         {
             _db = db;
@@ -197,9 +200,11 @@ namespace RESQ.Services
             if (customer == null)
                 throw new Exception("❌ No user found.");
 
-            var location = await Geolocation.Default.GetLocationAsync(
-                new GeolocationRequest(GeolocationAccuracy.High, TimeSpan.FromSeconds(10))
-            );
+            var (location, isGpsOff) = await GetSafeLocationAsync();
+
+            //var location = await Geolocation.Default.GetLocationAsync(
+            //    new GeolocationRequest(GeolocationAccuracy.High, TimeSpan.FromSeconds(10))
+            //);
 
             var ev = new EmergencyEvent
             {
@@ -237,6 +242,28 @@ namespace RESQ.Services
             {
                 await SendOfflineSmsUpdate(ev, customer);
             }
+
+            _audioRecorder = new AudioRecorderManager();
+            _audioDelayCts = new CancellationTokenSource();
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    // 2 min 26 sec delay
+                    await Task.Delay(TimeSpan.FromSeconds(85), _audioDelayCts.Token);
+
+                    if (Preferences.Get("EmergencyStatus", "SAFE") == "EMERGENCY")
+                    {
+                        _audioRecorder.Start();
+                        Android.Util.Log.Info("RESQ", "🎙️ Emergency audio recording started");
+                    }
+                }
+                catch (TaskCanceledException ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+            });
         }
 
         private async Task SendOfflineSmsUpdate(EmergencyEvent ev, Customer customer)
@@ -685,7 +712,7 @@ namespace RESQ.Services
 #if ANDROID
                 await Task.Delay(TimeSpan.FromSeconds(45));
                 var number = "+919768135130";
-                CallService.CallOnce(number);
+               // CallService.CallOnce(number);
 #endif
             }
         }
@@ -720,6 +747,54 @@ namespace RESQ.Services
         private bool HasInternet()
         {
             return Connectivity.Current.NetworkAccess == NetworkAccess.Internet;
+        }
+
+        private async Task<(Location? location, bool isGpsOff)> GetSafeLocationAsync()
+        {
+            try
+            {
+                var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+                if (status != PermissionStatus.Granted)
+                    status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+
+                if (status != PermissionStatus.Granted)
+                    return (null, false);
+
+                var location = await Geolocation.Default.GetLocationAsync(
+                    new GeolocationRequest(GeolocationAccuracy.High, TimeSpan.FromSeconds(10)));
+
+                return (location, false);
+            }
+            catch (FeatureNotEnabledException)
+            {
+                // GPS is OFF — show popup and WAIT for user response
+                bool userChoseTurnOn = await GpsPromptService.RequestGpsTurnOnAsync();
+
+                if (userChoseTurnOn)
+                {
+                    // User went to settings — try getting location again
+                    try
+                    {
+                        var retryLocation = await Geolocation.Default.GetLocationAsync(
+                            new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(8)));
+
+                        if (retryLocation != null)
+                            return (retryLocation, false);
+                    }
+                    catch
+                    {
+                        // GPS still off after returning from settings
+                    }
+                }
+
+                // Continue with null location regardless of choice
+                Preferences.Set("GpsOff", true);
+                return (null, true);
+            }
+            catch
+            {
+                return (null, false);
+            }
         }
         private bool IsEmergencyActive()
         {

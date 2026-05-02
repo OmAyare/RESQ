@@ -126,6 +126,8 @@ namespace RESQ.ViewModels
 
         }
 
+        // ─── REPLACE both LoadData() and LoadDataAsync() with this single method ───
+
         private async Task LoadDataAsync()
         {
             Customer = await _localDb.GetCustomerAsync() ?? new Customer();
@@ -133,50 +135,92 @@ namespace RESQ.ViewModels
 
             var contacts = await _localDb.GetAllEmergencyContactsAsync();
 
-            // if no 112, add it
+            // ✅ One-time cleanup: remove old test number if it exists in DB
+            var staleNumbers = new[] { "8899441223", "+918899441223" };
+            foreach (var stale in staleNumbers)
+            {
+                var staleContact = contacts.FirstOrDefault(c => c.PhoneNumber == stale);
+                if (staleContact != null)
+                {
+                    await _localDb.DeleteEmergencyContactAsync(staleContact);
+                    contacts.Remove(staleContact);
+                }
+            }
+
+            // ✅ Add 112 only if missing
             if (!contacts.Any(c => c.PhoneNumber == "112"))
             {
                 var default112 = new EmergencyContact
                 {
                     ContactName = "Emergency",
-                    PhoneNumber = "112"
+                    PhoneNumber = "112",
                 };
                 await _localDb.SaveEmergencyContactAsync(default112);
                 contacts.Insert(0, default112);
             }
 
-            // refresh observable collection
-            EmergencyContacts.Clear();
-            foreach (var c in contacts)
-                EmergencyContacts.Add(c);
-        }
-
-        private async void LoadData()
-        {
-
-            Customer = await _localDb.GetCustomerAsync() ?? new Customer();
-            MedicalInfo = await _localDb.GetMedicalInfoAsync() ?? new MedicalInfo();
-
-
-            var contacts = await _localDb.GetAllEmergencyContactsAsync();
-
-            // if no 112, add it
-            if (!contacts.Any(c => c.PhoneNumber == "8928393337"))
+            // ✅ Rebuild observable on main thread
+            await MainThread.InvokeOnMainThreadAsync(() =>
             {
-                var default112 = new EmergencyContact
-                {
-                    ContactName = "Emergency (Test)",
-                    PhoneNumber = "8928393337"
-                };
-                await _localDb.SaveEmergencyContactAsync(default112);
-                contacts.Insert(0, default112);
-            }
-
-            // refresh observable collection
-            EmergencyContacts.Clear();
-            foreach (var c in contacts)
-                EmergencyContacts.Add(c);
+                EmergencyContacts.Clear();
+                foreach (var c in contacts)
+                    EmergencyContacts.Add(c);
+            });
         }
+
+        // ✅ Sync wrapper so constructor can call it without async
+        private async void LoadData() => await LoadDataAsync();
+        //private async Task LoadDataAsync()
+        //{
+        //    Customer = await _localDb.GetCustomerAsync() ?? new Customer();
+        //    MedicalInfo = await _localDb.GetMedicalInfoAsync() ?? new MedicalInfo();
+
+        //    var contacts = await _localDb.GetAllEmergencyContactsAsync();
+
+        //    // if no 112, add it
+        //    if (!contacts.Any(c => c.PhoneNumber == "112"))
+        //    {
+        //        var default112 = new EmergencyContact
+        //        {
+        //            ContactName = "Emergency",
+        //            PhoneNumber = "112"
+        //        };
+        //        await _localDb.SaveEmergencyContactAsync(default112);
+        //        contacts.Insert(0, default112);
+        //    }
+
+        //    // refresh observable collection
+        //    EmergencyContacts.Clear();
+        //    foreach (var c in contacts)
+        //        EmergencyContacts.Add(c);
+        //}
+
+        //private async void LoadData()
+        //{
+
+        //    Customer = await _localDb.GetCustomerAsync() ?? new Customer();
+        //    MedicalInfo = await _localDb.GetMedicalInfoAsync() ?? new MedicalInfo();
+
+
+        //    var contacts = await _localDb.GetAllEmergencyContactsAsync();
+
+        //    // if no 112, add it
+        //    if (!contacts.Any(c => c.PhoneNumber == "8899441223"))
+        //    {
+        //        var default112 = new EmergencyContact
+        //        {
+        //            ContactName = "Emergency (Test)",
+        //            PhoneNumber = "8899441223"
+        //        };
+        //        await _localDb.SaveEmergencyContactAsync(default112);
+        //        contacts.Insert(0, default112);
+        //    }
+
+        //    // refresh observable collection
+        //    EmergencyContacts.Clear();
+        //    foreach (var c in contacts)
+        //        EmergencyContacts.Add(c);
+        //}
 
         [RelayCommand]
         public async Task AddEmergencyContact()

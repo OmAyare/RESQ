@@ -21,9 +21,13 @@
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
 	<uses-permission android:name="android.permission.SEND_RESPOND_VIA_MESSAGE" />
-
 	<uses-permission android:name="android.permission.CALL_PHONE" />
-	<application android:allowBackup="true" android:usesCleartextTraffic="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true" android:label="RESQ" android:name="crc646e6c8a6179242f45.MainApplication" android:debuggable="true" android:extractNativeLibs="true">
+
+	<!--Audio Recorder Permission -->
+	<uses-permission android:name="android.permission.RECORD_AUDIO" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+	<application android:allowBackup="true" android:usesCleartextTraffic="true" android:icon="@mipmap/logo_identical_white_bg" android:roundIcon="@mipmap/logo_identical_white_bg_round" android:supportsRtl="true" android:label="RESQ" android:name="crc646e6c8a6179242f45.MainApplication" android:debuggable="true" android:extractNativeLibs="true">
 		<!-- Emergency Foreground Service -->
 		<!-- SMS Receiver for incoming messages -->
 		<!--<receiver android:name="RESQ.Platforms.Android.SmsReceiver" android:enabled="true" android:exported="true" android:permission="android.permission.BROADCAST_SMS">
@@ -124,7 +128,7 @@
 				android:resource="@xml/emergency_accessibility_config" />
 		</service>
 
-		<service android:exported="true" android:foregroundServiceType="location" android:name="crc64273fb85989c965fa.EmergencyService" />
+		<service android:exported="true" android:foregroundServiceType="location|microphone" android:name="crc64273fb85989c965fa.EmergencyService" />
 		<service android:exported="true" android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE" android:name="crc64273fb85989c965fa.HeadlessSmsSendService">
 			<intent-filter>
 				<action android:name="android.intent.action.RESPOND_VIA_MESSAGE" />

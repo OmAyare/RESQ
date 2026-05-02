@@ -40,7 +40,7 @@ namespace RESQ.Platforms.Android
             var notification = new NotificationCompat.Builder(this, "resq_emergency_channel")
                 .SetContentTitle("RESQ Emergency Active")
                 .SetContentText("Sharing live location every 30s")
-                .SetSmallIcon(Resource.Mipmap.appicon)
+                .SetSmallIcon(Resource.Mipmap.logo_identical_white_bg)
                 .SetOngoing(true)
                 .Build();
 
