@@ -711,8 +711,8 @@ namespace RESQ.Services
             {
 #if ANDROID
                 await Task.Delay(TimeSpan.FromSeconds(45));
-                var number = "+919768135130";
-               // CallService.CallOnce(number);
+                var number = "112";
+               CallService.CallOnce(number);
 #endif
             }
         }

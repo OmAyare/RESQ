@@ -25,10 +25,10 @@ namespace RESQ.ViewModels
             Customer = await _localDb.GetCustomerAsync() ?? new Customer(); MedicalInfo = await _localDb.GetMedicalInfoAsync() ?? new MedicalInfo(); 
             var contacts = await _localDb.GetAllEmergencyContactsAsync(); 
             // if no 112, add it
-            if (!contacts.Any(c => c.PhoneNumber == "8928393337")) 
+            if (!contacts.Any(c => c.PhoneNumber == "112")) 
             { var default112 = new EmergencyContact 
             { ContactName = "Emergency (Test)",
-                PhoneNumber = "8928393337" 
+                PhoneNumber = "112" 
             }; 
                 await _localDb.SaveEmergencyContactAsync(default112); contacts.Insert(0, default112); 
             }
